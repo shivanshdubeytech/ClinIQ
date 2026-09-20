@@ -57,7 +57,7 @@ def build_prompt(
 CRITICAL INSTRUCTIONS:
 1. Synthesize evidence from the PROVIDED CONTEXT CHUNKS to address the user's health question thoroughly, accurately, and cautiously.
 2. When the context contains relevant clinical topics (such as viral infections, common cold & flu, respiratory illnesses, symptoms, or disease management), explain the symptoms, mechanisms, and care guidance that directly relate to the user's question.
-3. Clearly highlight common symptoms and emphasize red flag warning signs (e.g. persistent high fever, difficulty breathing, chest pain, or inability to keep fluids down) that warrant prompt professional medical evaluation.
+3. Highlight relevant symptoms and emergency warning signs mentioned in or directly relevant to the context (such as severe breathing difficulty, sudden worsening, or failure to respond to quick-relief care) that warrant prompt medical evaluation.
 4. If the question is completely non-medical or the context chunks contain no relevant medical information to answer the question, state: "I don't have enough information to answer this reliably."
 5. Maintain a cautious, objective, and professional tone appropriate for consumer health information. Do not formulate definitive clinical diagnoses. Do NOT name or recommend specific pharmaceutical medications (such as acetaminophen, ibuprofen, or antibiotics) unless explicitly mentioned in the context chunks; recommend rest, hydration, monitoring, and consulting a healthcare professional.
 6. Format your answer as plain prose in clear, complete sentences. Write in cohesive, flowing paragraphs only.
@@ -91,7 +91,7 @@ def generate_answer(
     """
     prompt = build_prompt(question=question, context_chunks=context_chunks, history=history)
 
-    candidate_models = [LLM_MODEL_NAME, "qwen/qwen3.8-27b", "openai/gpt-oss-120b"]
+    candidate_models = [LLM_MODEL_NAME, "openai/gpt-oss-120b", "openai/gpt-oss-20b", "qwen/qwen3.8-27b"]
     seen = set()
     models_to_try = [m for m in candidate_models if not (m in seen or seen.add(m))]
 
@@ -101,31 +101,34 @@ def generate_answer(
     for api_key in keys_to_try:
         client = Groq(api_key=api_key)
         for model in models_to_try:
-            try:
-                response = client.chat.completions.create(
-                    messages=[
-                        {
-                            "role": "user",
-                            "content": prompt,
-                        }
-                    ],
-                    model=model,
-                    temperature=0.2,
-                    max_tokens=1024,
-                )
+            for token_limit in [768, 512]:
+                try:
+                    response = client.chat.completions.create(
+                        messages=[
+                            {
+                                "role": "user",
+                                "content": prompt,
+                            }
+                        ],
+                        model=model,
+                        temperature=0.2,
+                        max_tokens=token_limit,
+                    )
 
-                if response.choices and len(response.choices) > 0:
-                    content = response.choices[0].message.content
-                    if content and content.strip():
-                        return content.strip()
-            except Exception as err:
-                last_err = err
-                err_str = str(err).lower()
-                logger.warning(f"Generator model '{model}' failed on key: {err}.")
-                if "rate_limit" in err_str or "429" in err_str or "401" in err_str or "invalid_api_key" in err_str:
-                    rotate_groq_api_key(api_key)
-                    break  # Try next key
-                continue
+                    if response.choices and len(response.choices) > 0:
+                        content = response.choices[0].message.content
+                        if content and content.strip():
+                            return content.strip()
+                except Exception as err:
+                    last_err = err
+                    err_str = str(err).lower()
+                    logger.warning(f"Generator model '{model}' with max_tokens={token_limit} failed on key: {err}.")
+                    if "expected output tokens exceed" in err_str or "reduce max_tokens" in err_str:
+                        continue  # retry with lower token_limit
+                    if "rate_limit" in err_str or "429" in err_str or "401" in err_str or "invalid_api_key" in err_str:
+                        rotate_groq_api_key(api_key)
+                        break  # Try next key
+                    break  # Try next model
 
     return f"[GENERATION ERROR] Unable to generate answer due to API error: {last_err}"
 

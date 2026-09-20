@@ -122,7 +122,7 @@ Answer:
 
 Instruction:
 Evaluate whether the Answer introduces major fabricated facts, incorrect medical statistics, or dangerous claims that contradict the context.
-General health education, common self-care advice (such as rest, hydration, monitoring symptoms, seeking a doctor), and faithful synthesis of symptoms mentioned in the context are valid and supported.
+General health education, common self-care advice (such as rest, hydration, monitoring symptoms, seeking a doctor), and faithful synthesis of symptoms or guidance mentioned in the context are valid and supported. Standard medical precautions and red-flag advice (e.g. seeking urgent care if symptoms worsen or breathing becomes difficult) are accepted safety guidance and NOT unsupported claims.
 Return a JSON object with two fields:
 - "unsupported_claims": boolean (true ONLY if the answer contains major fabricated or contradicted medical claims, false if it is grounded and cautious)
 - "reason": string (a short 1-sentence explanation)
@@ -130,7 +130,7 @@ Return a JSON object with two fields:
 JSON:"""
 
     raw_response = ""
-    candidate_models = [LLM_MODEL_NAME, "qwen/qwen3.8-27b", "openai/gpt-oss-120b"]
+    candidate_models = [LLM_MODEL_NAME, "openai/gpt-oss-120b", "openai/gpt-oss-20b", "qwen/qwen3.8-27b"]
     seen = set()
     models_to_try = [m for m in candidate_models if not (m in seen or seen.add(m))]
     keys_to_try = KEY_ROTATION_MANAGER.get_all_keys()
@@ -145,7 +145,7 @@ JSON:"""
                     ],
                     model=model,
                     temperature=0.1,
-                    max_tokens=512,
+                    max_tokens=384,
                 )
 
                 raw_response = completion.choices[0].message.content or ""
@@ -209,7 +209,7 @@ Return a JSON object with two fields:
 JSON:"""
 
     raw_response = ""
-    candidate_models = [LLM_MODEL_NAME, "qwen/qwen3.8-27b", "openai/gpt-oss-120b"]
+    candidate_models = [LLM_MODEL_NAME, "openai/gpt-oss-120b", "openai/gpt-oss-20b", "qwen/qwen3.8-27b"]
     seen = set()
     models_to_try = [m for m in candidate_models if not (m in seen or seen.add(m))]
     keys_to_try = KEY_ROTATION_MANAGER.get_all_keys()
@@ -224,7 +224,7 @@ JSON:"""
                     ],
                     model=model,
                     temperature=0.1,
-                    max_tokens=512,
+                    max_tokens=384,
                 )
 
                 raw_response = completion.choices[0].message.content or ""
