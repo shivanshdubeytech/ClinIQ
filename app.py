@@ -117,6 +117,8 @@ def api_query():
                 "passed": result["passed"],
                 "audio_url": audio_url,
                 "sources": result["sources"],
+                "is_concerning": result.get("is_concerning", False),
+                "disclaimer": result.get("disclaimer", config.STANDARD_MEDICAL_DISCLAIMER),
             }
         )
 

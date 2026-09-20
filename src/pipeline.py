@@ -6,6 +6,7 @@ single unified entry point function `handle_query()` for client UI integration.
 """
 
 import json
+import re
 import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -28,6 +29,64 @@ from src.retriever import retrieve
 from src.tts import synthesize
 
 logger = setup_logger("pipeline")
+
+# Clinical Red-Flag Patterns for Acute, Emergency, or Concerning Inquiries
+CONCERNING_PATTERNS = [
+    # Cardiac / Acute Chest Distress
+    r"\bchest\s+(pain|tightness|pressure|discomfort|heaviness)\b",
+    r"\bheart\s+attack\b",
+    r"\bmyocardial\s+infarction\b",
+    r"\bcardiac\s+arrest\b",
+    r"\bpain\s+radiating\s+to\s+(left\s+arm|jaw|neck|shoulder|back)\b",
+    # Respiratory Distress & Airway Emergencies
+    r"\b(shortness\s+of\s+breath|difficulty\s+breathing|cannot\s+breathe|can't\s+breathe|trouble\s+breathing)\b",
+    r"\b(asthma\s+attack|acute\s+asthma|severe\s+asthma|gasping\s+for\s+(air|breath))\b",
+    r"\b(choking|asphyxiat(ion|ing)|suffocat(ion|ing)|blue\s+(lips|face|fingers))\b",
+    # Stroke / Neurological Crises
+    r"\b(stroke|mini[- ]stroke|tia|transient\s+ischemic)\b",
+    r"\b(face\s+droop(ing)?|facial\s+droop(ing)?)\b",
+    r"\b(slurred\s+speech|speech\s+slurred|cannot\s+speak|unable\s+to\s+speak)\b",
+    r"\b(sudden\s+(numbness|paralysis|weakness)\s+(on\s+one\s+side|in\s+arm|in\s+face|in\s+leg))\b",
+    r"\b(thunderclap\s+headache|worst\s+headache\s+of\s+my\s+life)\b",
+    r"\b(unconscious|loss\s+of\s+consciousness|passed\s+out|passing\s+out|fainted|fainting|unresponsive)\b",
+    r"\b(seizure|seizures|convuls(ing|ion)|epilep(tic|sy)\s+fit)\b",
+    # Severe Bleeding & Trauma
+    r"\b(severe|uncontrolled|heavy|massive|profuse)\s+bleeding\b",
+    r"\b(coughing|vomiting)\s+(up\s+)?blood\b",
+    r"\b(blood\s+in\s+(vomit|stool|urine)|black\s+tarry\s+stool)\b",
+    r"\b(hemorrhag(e|ing)|stab\s+wound|gunshot)\b",
+    r"\b(severe\s+head\s+injury|skull\s+fracture|severe\s+concussion)\b",
+    # Anaphylaxis & Severe Allergies
+    r"\b(anaphylax(is|ic)|severe\s+allergic\s+reaction)\b",
+    r"\b(throat\s+closing|throat\s+swelling|tongue\s+swelling|swollen\s+tongue)\b",
+    # Poisoning & Overdose
+    r"\b(poison(ing|ed)?|toxic\s+(ingestion|substance|fumes))\b",
+    r"\b(overdose|drug\s+overdose|swallowed\s+(pills|battery|bleach|chemical))\b",
+    # Mental Health Crisis & Self-Harm
+    r"\b(suicid(e|al)|kill\s+myself|end\s+my\s+life|want\s+to\s+die|self[- ]harm)\b",
+    # Acute Medical Emergencies
+    r"\b(high\s+fever\s+(with|and)\s+stiff\s+neck|meningitis)\b",
+    r"\b(third\s+degree\s+burn|severe\s+burns)\b",
+    r"\b(medical\s+emergency|life[- ]threatening\s+emergency)\b",
+]
+
+
+def check_concerning_query(question: str) -> bool:
+    """Evaluates whether a user's question presents acute, red-flag, or emergency symptoms.
+
+    Args:
+        question (str): User's natural language input inquiry.
+
+    Returns:
+        bool: True if emergency or concerning symptom markers are identified.
+    """
+    if not question:
+        return False
+    q_norm = question.strip().lower()
+    for pattern in CONCERNING_PATTERNS:
+        if re.search(pattern, q_norm):
+            return True
+    return False
 
 
 def handle_query(user_id: str, question: str, session_id: Optional[str] = None) -> Dict[str, Any]:
@@ -61,7 +120,13 @@ def handle_query(user_id: str, question: str, session_id: Optional[str] = None) 
             "passed": False,
             "audio_path": None,
             "sources": [],
+            "is_concerning": False,
+            "disclaimer": config.STANDARD_MEDICAL_DISCLAIMER,
         }
+
+    is_concerning: bool = check_concerning_query(question)
+    if is_concerning:
+        logger.warning(f"[CONCERNING QUERY DETECTED] Question: '{question}' flagged for urgent medical disclaimer.")
 
     # Custom Identity & Creator attribution handler
     q_norm = question.strip().lower()
@@ -106,6 +171,8 @@ def handle_query(user_id: str, question: str, session_id: Optional[str] = None) 
             "passed": True,
             "audio_path": audio_path,
             "sources": ["ClinIQ System Profile"],
+            "is_concerning": False,
+            "disclaimer": config.STANDARD_MEDICAL_DISCLAIMER,
         }
 
     try:
@@ -162,6 +229,8 @@ def handle_query(user_id: str, question: str, session_id: Optional[str] = None) 
             "passed": passed,
             "audio_path": audio_path,
             "sources": sources,
+            "is_concerning": is_concerning,
+            "disclaimer": config.URGENT_MEDICAL_DISCLAIMER if is_concerning else config.STANDARD_MEDICAL_DISCLAIMER,
         }
 
     except Exception as err:
@@ -173,6 +242,8 @@ def handle_query(user_id: str, question: str, session_id: Optional[str] = None) 
             "passed": False,
             "audio_path": None,
             "sources": [],
+            "is_concerning": False,
+            "disclaimer": config.STANDARD_MEDICAL_DISCLAIMER,
             "error": str(err),
         }
 

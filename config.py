@@ -161,6 +161,12 @@ STANDARD_MEDICAL_DISCLAIMER: str = (
     "Disclaimer: ClinIQ provides general consumer health information for educational "
     "purposes only. It is not a substitute for professional medical advice, diagnosis, or treatment."
 )
+URGENT_MEDICAL_DISCLAIMER: str = (
+    "Urgent Medical Disclaimer: If you or someone nearby is experiencing acute, severe symptoms, chest pain, "
+    "breathing distress, signs of stroke, poisoning, or an emergency, please contact emergency services "
+    "(911 / 112) or go to the nearest emergency department immediately. ClinIQ is an AI educational "
+    "reference and does not provide clinical diagnosis or emergency medical triage."
+)
 
 # Centralized Logging Setup
 LOG_LEVEL_STR: str = _get_env_var("LOG_LEVEL", "INFO", str).upper()
