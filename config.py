@@ -155,17 +155,17 @@ SQLITE_DB_PATH: str = _get_env_var("SQLITE_DB_PATH", "./cliniq.db", str)
 
 # System-Wide Centralized Policy Constants
 STANDARD_FALLBACK_MESSAGE: str = (
-    "I don't have enough reliable information to answer this question with sufficient confidence."
+    "I don't have enough reliable information to answer this question with sufficient confidence. "
+    "Please seek professional medical help from a qualified healthcare provider."
 )
 STANDARD_MEDICAL_DISCLAIMER: str = (
     "Disclaimer: ClinIQ provides general consumer health information for educational "
     "purposes only. It is not a substitute for professional medical advice, diagnosis, or treatment."
 )
 URGENT_MEDICAL_DISCLAIMER: str = (
-    "Urgent Medical Disclaimer: If you or someone nearby is experiencing acute, severe symptoms, chest pain, "
-    "breathing distress, signs of stroke, poisoning, or an emergency, please contact emergency services "
-    "(911 / 112) or go to the nearest emergency department immediately. ClinIQ is an AI educational "
-    "reference and does not provide clinical diagnosis or emergency medical triage."
+    "Seek immediate medical help: If you or someone nearby is experiencing acute, severe symptoms, chest pain, "
+    "breathing distress, signs of stroke, poisoning, or a medical emergency, please call emergency services "
+    "(911 / 112) or go to the nearest emergency department immediately."
 )
 
 # Centralized Logging Setup

@@ -235,23 +235,36 @@
       color: #f3f7f2;
     }
 
-    [data-theme="dark"] .concerning-alert {
-      background: rgba(229, 62, 62, 0.12);
-      border-color: rgba(229, 62, 62, 0.35);
+    [data-theme="dark"] .concerning-alert.high-risk {
+      background: rgba(229, 62, 62, 0.1);
+      border-color: rgba(229, 62, 62, 0.28);
       border-left-color: #fc8181;
-      box-shadow: 0 4px 20px rgba(229, 62, 62, 0.1);
     }
 
-    [data-theme="dark"] .concerning-alert-header {
+    [data-theme="dark"] .concerning-alert.unanswerable {
+      background: rgba(221, 107, 32, 0.1);
+      border-color: rgba(221, 107, 32, 0.28);
+      border-left-color: #f6ad55;
+    }
+
+    [data-theme="dark"] .concerning-alert.high-risk .concerning-alert-header {
       color: #feb2b2;
     }
 
-    [data-theme="dark"] .concerning-alert-header i {
+    [data-theme="dark"] .concerning-alert.high-risk .concerning-alert-header i {
       color: #fc8181;
     }
 
+    [data-theme="dark"] .concerning-alert.unanswerable .concerning-alert-header {
+      color: #fbd38d;
+    }
+
+    [data-theme="dark"] .concerning-alert.unanswerable .concerning-alert-header i {
+      color: #f6ad55;
+    }
+
     [data-theme="dark"] .concerning-alert-text {
-      color: #f7dcd9;
+      color: #e2e8f0;
     }
 
     [data-theme="dark"] .concerning-call-btn {
@@ -266,11 +279,11 @@
     [data-theme="dark"] .concerning-sos-btn {
       background: rgba(255, 255, 255, 0.08);
       color: #feb2b2;
-      border-color: rgba(229, 62, 62, 0.4);
+      border-color: rgba(229, 62, 62, 0.35);
     }
 
     [data-theme="dark"] .concerning-sos-btn:hover {
-      background: rgba(229, 62, 62, 0.22);
+      background: rgba(229, 62, 62, 0.2);
       border-color: #fc8181;
     }
 
@@ -2280,90 +2293,110 @@
       overflow: hidden
     }
 
-    /* Urgent Medical Disclaimer Banner */
+    /* Medical Help Callout for High-Risk or Unanswerable Inquiries */
     .concerning-alert {
-      background: #fff5f5;
-      border: 1px solid #fed7d7;
-      border-left: 4px solid #e53e3e;
-      border-radius: 8px;
-      padding: 15px 18px;
-      margin-bottom: 20px;
-      animation: alertFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      margin: 14px 0 10px;
+      padding: 11px 15px;
+      border-radius: 6px;
+      animation: alertFadeIn 0.25s ease-out;
     }
 
     @keyframes alertFadeIn {
-      from { opacity: 0; transform: translateY(-4px); }
+      from { opacity: 0; transform: translateY(3px); }
       to { opacity: 1; transform: translateY(0); }
+    }
+
+    .concerning-alert.high-risk {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 3.5px solid #e53e3e;
+    }
+
+    .concerning-alert.unanswerable {
+      background: #fffaf0;
+      border: 1px solid #feebc8;
+      border-left: 3.5px solid #dd6b20;
     }
 
     .concerning-alert-header {
       display: flex;
       align-items: center;
-      gap: 8px;
-      color: #c53030;
-      font-weight: 700;
-      font-size: 13.5px;
-      letter-spacing: 0.2px;
+      gap: 7px;
+      font-weight: 650;
+      font-size: 13px;
     }
 
-    .concerning-alert-header i {
-      font-size: 19px;
+    .concerning-alert.high-risk .concerning-alert-header {
+      color: #c53030;
+    }
+
+    .concerning-alert.high-risk .concerning-alert-header i {
       color: #e53e3e;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .concerning-alert.unanswerable .concerning-alert-header {
+      color: #c05621;
+    }
+
+    .concerning-alert.unanswerable .concerning-alert-header i {
+      color: #dd6b20;
+      font-size: 16px;
       flex-shrink: 0;
     }
 
     .concerning-alert-text {
       color: #4a5568;
-      font-size: 13px;
-      line-height: 1.6;
-      margin: 6px 0 13px 0;
+      font-size: 12.5px;
+      line-height: 1.55;
+      margin: 4px 0 8px 0;
     }
 
     .concerning-alert-actions {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 6px;
       align-items: center;
+      margin-top: 4px;
     }
 
     .concerning-call-btn {
       background: #e53e3e;
       color: #ffffff !important;
-      font-size: 12px;
-      font-weight: 650;
-      padding: 6px 13px;
-      border-radius: 6px;
+      font-size: 11.5px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 5px;
       text-decoration: none;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      transition: background 0.15s ease, transform 0.15s ease;
+      gap: 5px;
+      transition: background 0.15s ease;
     }
 
     .concerning-call-btn:hover {
       background: #c53030;
-      transform: translateY(-1px);
     }
 
     .concerning-sos-btn {
       background: #ffffff;
       color: #c53030;
       border: 1px solid #feb2b2;
-      font-size: 12px;
-      font-weight: 650;
-      padding: 6px 13px;
-      border-radius: 6px;
+      font-size: 11.5px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 5px;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
       transition: all 0.15s ease;
     }
 
     .concerning-sos-btn:hover {
       background: #fff5f5;
       border-color: #fc8181;
-      transform: translateY(-1px);
     }
 
     .md-content {
@@ -4467,16 +4500,18 @@
       function renderMessage(msg) {
         const id = 'message-' + (++messageCounter); const user = msg.role === 'user'; const item = document.createElement('article'); item.className = 'message ' + (user ? 'user' : 'assistant'); item.dataset.testid = id; const date = msg.timestamp || msg.created_at; const formatted = date && !isNaN(new Date(date)) ? new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''; item.innerHTML = `<div class="message-header"><span class="message-avatar">${icon(user ? 'user' : 'sparkle')}</span><span>${user ? 'You' : 'ClinIQ'}</span><span class="message-time mono">${esc(formatted)}</span></div>`; if (user) { const body = document.createElement('div'); body.className = 'user-content'; body.dataset.testid = id + '-content'; body.textContent = msg.content; item.append(body); $('messages').append(item); return }
         const body = document.createElement('div'); body.className = 'assistant-body'; body.innerHTML = `<div class="md-content" data-testid="${id}-content">${markdown(msg.content)}</div>`; body.querySelectorAll('a').forEach((a, i) => { a.target = '_blank'; a.rel = 'noopener noreferrer'; a.dataset.testid = id + '-link-' + i });
-        const emergencyKeywords = /\b(chest\s+(pain|tightness|pressure)|heart\s+attack|stroke|shortness\s+of\s+breath|difficulty\s+breathing|cannot\s+breathe|can't\s+breathe|asthma\s+attack|choking|severe\s+bleeding|vomiting\s+blood|poison|overdose|suicid|anaphylax|emergency)\b/i;
-        const isConcerning = msg.is_concerning === true || emergencyKeywords.test(msg.content || '') || (typeof lastQuestion === 'string' && emergencyKeywords.test(lastQuestion));
-        if (isConcerning) {
+        const isHighRisk = msg.is_concerning === true;
+        const isUnanswerable = msg.passed === false;
+        if (isHighRisk || isUnanswerable) {
           const alert = document.createElement('div');
-          alert.className = 'concerning-alert';
+          alert.className = 'concerning-alert ' + (isHighRisk ? 'high-risk' : 'unanswerable');
           alert.setAttribute('role', 'alert');
-          alert.dataset.testid = id + '-concerning-alert';
-          alert.innerHTML = `<div class="concerning-alert-header">${icon('warning-octagon')}<span>Urgent Medical Disclaimer</span></div><p class="concerning-alert-text">${esc(msg.disclaimer || 'If you or someone nearby is experiencing acute, severe symptoms, chest pain, breathing difficulty, signs of stroke, poisoning, or a medical emergency, please contact emergency services (911 / 112) or go to the nearest emergency room immediately. ClinIQ is an AI educational reference and does not provide clinical diagnosis or emergency medical triage.')}</p><div class="concerning-alert-actions"><a href="tel:112" class="concerning-call-btn" title="Call 112">${icon('phone-call')}Call 112</a><a href="tel:911" class="concerning-call-btn" title="Call 911">${icon('phone-call')}Call 911</a><button type="button" class="concerning-sos-btn" data-testid="${id}-open-sos" title="Open Emergency SOS Guide">${icon('first-aid')}Quick SOS Guide</button></div>`;
-          alert.querySelector('.concerning-sos-btn').onclick = () => openSos();
-          body.prepend(alert);
+          alert.dataset.testid = id + '-medical-disclaimer';
+          alert.innerHTML = `<div class="concerning-alert-header">${icon(isHighRisk ? 'warning-octagon' : 'info')}<span>${isHighRisk ? 'Seek immediate medical attention' : 'Seek professional medical advice'}</span></div><p class="concerning-alert-text">${esc(isHighRisk ? (msg.disclaimer || 'If you are experiencing acute, severe symptoms or a medical emergency, call emergency services (911 / 112) or go to the nearest emergency department immediately.') : 'ClinIQ could not verify this inquiry with sufficient clinical certainty. Please consult a qualified healthcare provider for personal medical guidance.')}</p>${isHighRisk ? `<div class="concerning-alert-actions"><a href="tel:112" class="concerning-call-btn" title="Call 112">${icon('phone-call')}Call 112</a><a href="tel:911" class="concerning-call-btn" title="Call 911">${icon('phone-call')}Call 911</a><button type="button" class="concerning-sos-btn" data-testid="${id}-open-sos" title="Open Emergency SOS Guide">${icon('first-aid')}Quick SOS Guide</button></div>` : ''}`;
+          if (isHighRisk) {
+            alert.querySelector('.concerning-sos-btn')?.addEventListener('click', () => openSos());
+          }
+          body.append(alert);
         }
         const score = typeof msg.confidence === 'number' && Number.isFinite(msg.confidence) ? Math.max(0, Math.min(1, msg.confidence)) : null; const passed = msg.passed === true; const meta = document.createElement('div'); meta.className = 'message-metadata'; const badge = document.createElement('button'); badge.className = 'confidence ' + (score === null ? 'no-score' : passed ? '' : 'warning'); badge.dataset.testid = id + '-confidence'; badge.title = 'About grounding scores'; badge.innerHTML = icon(score === null ? 'info' : passed ? 'shield-check' : 'warning-circle') + `<span>${score === null ? 'Not evaluated' : passed ? 'Grounding check passed' : 'Low confidence · Refusal gated'}</span>${score !== null ? `<span class="mono">${score.toFixed(2)}</span>` : ''}`; badge.onclick = () => showFeature('confidence'); meta.append(badge); const note = document.createElement('span'); note.className = 'metric-note'; note.dataset.testid = id + '-score-note'; note.textContent = 'Not a measure of clinical accuracy'; meta.append(note); body.append(meta);
         if (msg.audio_url || msg.audio_path) { const audioSrc = msg.audio_url ? safeUrl(msg.audio_url) : safeUrl(endpoint('/api/audio/' + encodeURIComponent(String(msg.audio_path).split(/[\\/]/).pop())), location.href); if (audioSrc) body.append(buildAudio(audioSrc, id)) }
@@ -4489,7 +4524,7 @@
       async function submitQuestion(question, retry = false) { question = String(question || '').trim(); if (busy || !question) return; if (question.length > 5000) { toast('Please keep your question under 5,000 characters.', true); return } activeController?.abort(); const controller = new AbortController(); activeController = controller; const epoch = ++requestEpoch; const currentSession = sessionId; lastQuestion = question; setBusy(true); showConversation(true); $('messages').querySelectorAll('.error-card').forEach(el => el.remove()); $('query-input').value = ''; resizeInput(); if (!retry) { const message = { role: 'user', content: question, timestamp: new Date().toISOString() }; messages.push(message); renderMessage(message) } showLoader(); scrollBottom(); try { const data = await request('/api/query', { method: 'POST', data: { user_id: userId, session_id: currentSession, question }, signal: controller.signal, timeout: 120000 }); if (epoch !== requestEpoch || currentSession !== sessionId) return; if (typeof data?.answer !== 'string' || !data.answer.trim()) throw new Error('The server did not return an answer.'); $('response-loader')?.remove(); const answer = { role: 'assistant', content: data.answer, confidence: data.confidence, passed: data.passed, audio_url: data.audio_url, audio_path: data.audio_path, sources: data.sources, is_concerning: data.is_concerning, disclaimer: data.disclaimer, timestamp: new Date().toISOString() }; messages.push(answer); renderMessage(answer); lastQuestion = ''; setConnection('online'); loadHistory() } catch (error) { if (epoch !== requestEpoch || cancelError(error)) return; $('response-loader')?.remove(); setConnection('offline'); const detail = error?.response?.status === 429 ? 'The server is busy. Please wait a moment and try again.' : 'ClinIQ could not reach a medical answer. Check your server connection, then try again. No answer has been generated.'; renderError(detail, () => submitQuestion(question, true)); toast('Unable to reach your ClinIQ server.', true) } finally { if (epoch === requestEpoch) { setBusy(false); scrollBottom(); if (window.innerWidth >= 768) $('query-input').focus({ preventScroll: true }) } } }
       const featureContent = { knowledge: { title: 'Knowledge, not guesswork.', subtitle: 'Medical context before a response.', body: '<h3>Grounded in a medical knowledge base.</h3><p>Your original ClinIQ server uses MedQuAD Q&A pairs and seed medical data, indexed with sentence-transformers and ChromaDB. Relevant passages are retrieved before an answer is generated.</p><p>Sources returned by your server are shown with each answer, so you can explore its supporting material. No source is added by this interface.</p>' }, confidence: { title: 'A little more certainty.', subtitle: 'Transparent checks. Important limits.', body: '<h3>A grounding score, not a diagnosis.</h3><p>The connected server returns a confidence score and a pass or refusal decision. The interface displays these values without inventing or recalculating them.</p><p>A high score indicates the server judged an answer faithful to retrieved material. It is not a calibrated probability of correctness, a clinical validation, or a guarantee that the answer applies to you.</p><h3>When the evidence is not enough.</h3><p>A response that fails the server’s evaluation is labeled as refusal-gated. Always review original sources and discuss health concerns with a qualified professional.</p>' }, voice: { title: 'Good answers. Out loud.', subtitle: 'A more accessible way to listen.', body: '<h3>Your answer, at your pace.</h3><p>When your existing server supplies a synthesized audio response, a voice player appears below the answer. Play, pause, seek, or change the pace from 0.75× to 2×.</p><p>Audio is provided by your ClinIQ server’s text-to-speech service. It is not generated in this HTML file, and no audio is created for a response that does not include one.</p>' } };
       function showFeature(key) { const f = featureContent[key]; if (!f) return; $('feature-dialog-title').textContent = f.title; $('feature-dialog-subtitle').textContent = f.subtitle; $('feature-dialog-body').innerHTML = f.body; stampTestIds($('feature-dialog')); openDialog('feature-dialog') }
-      function exportChat() { if (!messages.length) { toast('Start a conversation before exporting.'); return } const lines = ['# ClinIQ · Your health conversation', '', new Date().toLocaleDateString(), '', ...messages.flatMap(m => ['## ' + (m.role === 'user' ? 'You' : 'ClinIQ'), '', ...(m.role === 'assistant' && m.is_concerning ? ['> ⚠️ Urgent Medical Notice: ' + (m.disclaimer || 'If experiencing acute medical symptoms, seek emergency care immediately (911 / 112).'), ''] : []), m.content, '', ...(m.role === 'assistant' && typeof m.confidence === 'number' ? ['Grounding score: ' + m.confidence + ' · ' + (m.passed === true ? 'Passed' : 'Refusal gated'), ''] : []), ...(Array.isArray(m.sources) && m.sources.length ? ['Sources:', ...m.sources.map(s => { const info = sourceInfo(s); return '- ' + info.label + (info.url && info.url !== info.label ? ' (' + info.url + ')' : '') }), ''] : [])]), '---', 'Educational reference only. Not medical advice. Always consult a qualified healthcare professional.']; const blob = new Blob([lines.join('\n')], { type: 'text/markdown;charset=utf-8' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'ClinIQ-' + sessionId + '.md'; a.dataset.testid = 'conversation-download-link'; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 5000); toast('Your conversation has been exported.') }
+      function exportChat() { if (!messages.length) { toast('Start a conversation before exporting.'); return } const lines = ['# ClinIQ · Your health conversation', '', new Date().toLocaleDateString(), '', ...messages.flatMap(m => ['## ' + (m.role === 'user' ? 'You' : 'ClinIQ'), '', ...(m.role === 'assistant' && (m.is_concerning || m.passed === false) ? ['> ⚠️ Seek medical help: ' + (m.disclaimer || 'Please consult a doctor or emergency services for medical symptoms.'), ''] : []), m.content, '', ...(m.role === 'assistant' && typeof m.confidence === 'number' ? ['Grounding score: ' + m.confidence + ' · ' + (m.passed === true ? 'Passed' : 'Refusal gated'), ''] : []), ...(Array.isArray(m.sources) && m.sources.length ? ['Sources:', ...m.sources.map(s => { const info = sourceInfo(s); return '- ' + info.label + (info.url && info.url !== info.label ? ' (' + info.url + ')' : '') }), ''] : [])]), '---', 'Educational reference only. Not medical advice. Always consult a qualified healthcare professional.']; const blob = new Blob([lines.join('\n')], { type: 'text/markdown;charset=utf-8' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'ClinIQ-' + sessionId + '.md'; a.dataset.testid = 'conversation-download-link'; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 5000); toast('Your conversation has been exported.') }
       function setMotion(value) { reducedMotion = value; document.body.classList.toggle('reduced-motion', value); $('motion-toggle').setAttribute('aria-checked', String(value)); storage.set('reduceMotion', String(value)) }
       function initSwiper() { if (window.Swiper) { swiper = new Swiper('#questions-swiper', { slidesPerView: 1.6, spaceBetween: 10, watchOverflow: true, speed: reducedMotion ? 0 : 450, navigation: { nextEl: '#questions-next', prevEl: '#questions-prev' }, breakpoints: { 480: { slidesPerView: 2.25, spaceBetween: 12 }, 768: { slidesPerView: 2.35, spaceBetween: 12 }, 1250: { slidesPerView: 3.15, spaceBetween: 13 } }, a11y: { enabled: true }, on: { init: updateProgress, slideChange: updateProgress, breakpoint: updateProgress } }) } else { const holder = $('questions-swiper'); holder.style.overflowX = 'auto'; holder.querySelectorAll('.swiper-slide').forEach(s => s.style.cssText = 'width:250px;flex-shrink:0;margin-right:12px'); $('questions-next').onclick = () => holder.scrollBy({ left: 260, behavior: 'smooth' }); $('questions-prev').onclick = () => holder.scrollBy({ left: -260, behavior: 'smooth' }) } }
       function updateProgress(s) { const steps = s.snapGrid?.length || 3; const current = s.snapIndex || 0; $('swiper-progress').innerHTML = Array.from({ length: steps }, (_, i) => `<span class="${i === current ? 'active' : ''}"></span>`).join('') }
