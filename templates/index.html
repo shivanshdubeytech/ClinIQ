@@ -423,6 +423,82 @@
       border-bottom-color: var(--line);
     }
 
+    [data-theme="dark"] .sos-card {
+      background: #140b0d;
+      border-color: #3f151b;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.55);
+    }
+
+    [data-theme="dark"] .sos-card:hover {
+      background: #1a0e11;
+      border-color: #591a22;
+    }
+
+    [data-theme="dark"] .sos-chip {
+      background: #180f12;
+      border-color: #2c161a;
+      color: #fca5a5;
+    }
+
+    [data-theme="dark"] .sos-chip:hover {
+      background: #2b1217;
+      border-color: #ef4444;
+      color: #ffffff;
+    }
+
+    [data-theme="dark"] .sos-dialog {
+      background: #090b0a;
+      border-color: #2b181c;
+    }
+
+    [data-theme="dark"] .sos-banner {
+      background: #1a0e11;
+      border-color: #42181f;
+      color: #fecaca;
+    }
+
+    [data-theme="dark"] .sos-tab {
+      background: #101411;
+      border-color: #222b24;
+      color: #9eb0a2;
+    }
+
+    [data-theme="dark"] .sos-tab:hover {
+      background: #161c18;
+      color: #e5ece6;
+    }
+
+    [data-theme="dark"] .sos-tab.active {
+      background: #251216;
+      border-color: #ef4444;
+      color: #fecaca;
+    }
+
+    [data-theme="dark"] .sos-protocol-card {
+      background: #0f1311;
+      border-color: #1f2721;
+      color: #e5ece6;
+    }
+
+    [data-theme="dark"] .proto-danger {
+      background: #260f12;
+      border-left-color: #ef4444;
+      color: #fca5a5;
+    }
+
+    [data-theme="dark"] .fast-cell {
+      background: #131814;
+      border-color: #222c24;
+    }
+
+    [data-theme="dark"] .fast-cell strong {
+      color: #f2f7f1;
+    }
+
+    [data-theme="dark"] .fast-cell p {
+      color: #9daea2;
+    }
+
     *,
     *::before,
     *::after {
@@ -570,9 +646,11 @@
       color: #d7e2d9;
       display: flex;
       flex-direction: column;
-      padding: 32px 22px 20px;
+      padding: 24px 18px 18px;
       position: relative;
-      z-index: 40
+      z-index: 40;
+      overflow-y: auto;
+      overflow-x: hidden;
     }
 
     .brand {
@@ -805,16 +883,152 @@
     }
 
     .sidebar-bottom {
-      padding-top: 20px
+      padding-top: 14px;
+      flex-shrink: 0;
+    }
+
+    /* SOS Emergency Guide Card in Sidebar */
+    .sos-card {
+      background: rgba(220, 38, 38, 0.08);
+      border: 1px solid rgba(239, 68, 68, 0.28);
+      border-radius: 8px;
+      padding: 10px 10px 9px;
+      margin-bottom: 12px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color .2s, background .2s, box-shadow .2s;
+    }
+
+    .sos-card:hover {
+      background: rgba(220, 38, 38, 0.12);
+      border-color: rgba(239, 68, 68, 0.45);
+      box-shadow: 0 4px 16px rgba(220, 38, 38, 0.15);
+    }
+
+    .sos-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .sos-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .05em;
+      color: #f87171;
+      cursor: pointer;
+    }
+
+    .sos-pulse {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #ef4444;
+      box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+      animation: sos-pulse-anim 1.8s infinite;
+    }
+
+    @keyframes sos-pulse-anim {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+      70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+
+    .sos-expand-btn {
+      background: transparent;
+      border: none;
+      color: #fca5a5;
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      transition: color .2s, background .2s;
+    }
+
+    .sos-expand-btn:hover {
+      color: #ffffff;
+      background: rgba(239, 68, 68, 0.22);
+    }
+
+    .sos-quick-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 5px;
+      margin-bottom: 8px;
+    }
+
+    .sos-chip {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 5px;
+      padding: 5px 2px;
+      color: #fecaca;
+      font-size: 10px;
+      font-weight: 600;
+      text-align: center;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      transition: all .2s ease;
+    }
+
+    .sos-chip i {
+      font-size: 13px;
+    }
+
+    .sos-chip:hover {
+      background: rgba(239, 68, 68, 0.28);
+      border-color: #ef4444;
+      color: #ffffff;
+      transform: translateY(-1px);
+    }
+
+    .sos-call-row {
+      display: flex;
+    }
+
+    .sos-call-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background: linear-gradient(135deg, #dc2626, #b91c1c);
+      color: #ffffff !important;
+      text-decoration: none;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 6px 10px;
+      border-radius: 5px;
+      letter-spacing: .02em;
+      transition: background .2s, transform .2s, box-shadow .2s;
+      box-shadow: 0 2px 8px rgba(220, 38, 38, 0.35);
+    }
+
+    .sos-call-btn:hover {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.5);
     }
 
     .botanical-note {
       position: relative;
-      height: 137px;
+      height: 52px;
       overflow: hidden;
       border-radius: 6px;
       background: #21473c;
-      margin-bottom: 20px
+      margin-bottom: 12px;
     }
 
     .botanical-note img {
@@ -822,37 +1036,366 @@
       height: 100%;
       object-fit: cover;
       object-position: center 56%;
-      opacity: .62
+      opacity: .55;
     }
 
     .botanical-note:after {
       content: '';
       position: absolute;
       inset: 0;
-      background: linear-gradient(90deg, #14352be0, #14352b06)
+      background: linear-gradient(90deg, #14352bf0, #14352b30);
     }
 
     .botanical-text {
       position: absolute;
-      left: 15px;
-      top: 17px;
-      right: 14px;
-      z-index: 1
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      right: 12px;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      gap: 9px;
     }
 
     .botanical-text .ph {
-      font-size: 19px;
+      font-size: 16px;
       color: var(--lime);
       display: block;
-      margin-bottom: 12px
+      margin-bottom: 0;
+      flex-shrink: 0;
     }
 
     .botanical-text p {
       font-family: 'Playfair Display', serif;
-      font-size: 18px;
-      line-height: 1.35;
+      font-size: 13px;
+      line-height: 1.25;
       color: #edf2e8;
-      margin: 0
+      margin: 0;
+    }
+
+    /* SOS Dialog Modal */
+    .sos-dialog {
+      width: min(720px, calc(100vw - 32px));
+      max-height: 90dvh;
+    }
+
+    .sos-dialog-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .sos-dialog-beacon {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      display: grid;
+      place-items: center;
+      color: #ef4444;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .sos-dialog-body {
+      padding: 18px 24px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .sos-banner {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 8px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .sos-banner-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .sos-banner-left i {
+      font-size: 22px;
+      color: #dc2626;
+      flex-shrink: 0;
+    }
+
+    .sos-banner-left strong {
+      display: block;
+      color: #991b1b;
+      font-size: 13px;
+    }
+
+    .sos-banner-left span {
+      display: block;
+      color: #7f1d1d;
+      font-size: 11px;
+      opacity: .85;
+    }
+
+    .sos-hotlines {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .sos-hotline-btn {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+      border: 1px solid #f87171;
+      border-radius: 6px;
+      padding: 4px 10px;
+      text-decoration: none;
+      color: #991b1b;
+      transition: all .2s;
+    }
+
+    .sos-hotline-btn.primary {
+      background: #dc2626;
+      border-color: #b91c1c;
+      color: #ffffff;
+    }
+
+    .sos-hotline-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 3px 10px rgba(220, 38, 38, 0.25);
+    }
+
+    .hotline-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .hotline-lbl {
+      font-size: 9px;
+      opacity: .85;
+      margin-top: 2px;
+    }
+
+    .sos-nav-tabs {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: thin;
+    }
+
+    .sos-tab {
+      background: #f8faf7;
+      border: 1px solid #e2e8df;
+      border-radius: 6px;
+      padding: 7px 11px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #4b5563;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: all .2s;
+    }
+
+    .sos-tab i {
+      font-size: 14px;
+      color: #dc2626;
+    }
+
+    .sos-tab:hover {
+      background: #f1f5ee;
+      border-color: #cbd5e1;
+      color: #1f2937;
+    }
+
+    .sos-tab.active {
+      background: #fee2e2;
+      border-color: #ef4444;
+      color: #991b1b;
+      box-shadow: 0 1px 3px rgba(239, 68, 68, 0.15);
+    }
+
+    .sos-protocols {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .sos-protocol-card {
+      display: none;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 18px 20px;
+      animation: enter .3s ease;
+    }
+
+    .sos-protocol-card.active {
+      display: block;
+    }
+
+    .proto-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      gap: 12px;
+      margin-bottom: 14px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .proto-title {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .proto-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 6px;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      display: grid;
+      place-items: center;
+      color: #dc2626;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .proto-title h3 {
+      font-size: 15px;
+      font-weight: 700;
+      margin: 0 0 3px;
+    }
+
+    .proto-tag {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 4px;
+    }
+
+    .tag-critical {
+      background: rgba(220, 38, 38, 0.12);
+      color: #dc2626;
+      border: 1px solid rgba(220, 38, 38, 0.25);
+    }
+
+    .tag-urgent {
+      background: rgba(217, 119, 6, 0.12);
+      color: #d97706;
+      border: 1px solid rgba(217, 119, 6, 0.25);
+    }
+
+    .proto-call-quick {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: #dc2626;
+      color: #ffffff !important;
+      text-decoration: none;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 5px 9px;
+      border-radius: 5px;
+      flex-shrink: 0;
+      transition: background .2s;
+    }
+
+    .proto-call-quick:hover {
+      background: #b91c1c;
+    }
+
+    .proto-steps {
+      margin: 0 0 14px;
+      padding-left: 18px;
+      font-size: 12.5px;
+      line-height: 1.8;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .proto-danger {
+      display: flex;
+      align-items: start;
+      gap: 10px;
+      background: #fff1f2;
+      border-left: 3px solid #dc2626;
+      border-radius: 4px;
+      padding: 10px 12px;
+      font-size: 11.5px;
+      line-height: 1.6;
+      color: #991b1b;
+    }
+
+    .proto-danger i {
+      font-size: 16px;
+      color: #dc2626;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+
+    .fast-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .fast-cell {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      padding: 12px;
+      position: relative;
+    }
+
+    .fast-letter {
+      display: inline-block;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: #dc2626;
+      color: #ffffff;
+      text-align: center;
+      line-height: 26px;
+      font-weight: 800;
+      font-size: 14px;
+      margin-bottom: 6px;
+    }
+
+    .fast-cell strong {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+
+    .fast-cell p {
+      font-size: 11.5px;
+      line-height: 1.5;
+      color: #4b5563;
+      margin: 0;
     }
 
     .sidebar-profile {
@@ -3107,6 +3650,42 @@
         </div>
       </div>
       <div class="sidebar-bottom">
+        <div class="sos-card" id="sos-card" data-testid="sos-card">
+          <div class="sos-header">
+            <div class="sos-badge" id="sos-badge-trigger" title="Open Emergency SOS Guide" data-testid="sos-badge">
+              <span class="sos-pulse" aria-hidden="true"></span>
+              <i class="ph-bold ph-first-aid" aria-hidden="true"></i>
+              <span>EMERGENCY SOS</span>
+            </div>
+            <button id="sos-expand-btn" class="sos-expand-btn" aria-label="Open complete emergency guide" title="Open complete SOS guide" data-testid="sos-expand-btn">
+              <span>Guide</span><i class="ph ph-arrow-up-right" aria-hidden="true"></i>
+            </button>
+          </div>
+          <div class="sos-quick-grid">
+            <button class="sos-chip" data-sos="cpr" title="CPR (Cardiopulmonary Resuscitation)" data-testid="sos-chip-cpr">
+              <i class="ph-bold ph-heartbeat" aria-hidden="true"></i>
+              <span>CPR</span>
+            </button>
+            <button class="sos-chip" data-sos="stroke" title="Stroke (FAST Protocol)" data-testid="sos-chip-stroke">
+              <i class="ph-bold ph-brain" aria-hidden="true"></i>
+              <span>FAST</span>
+            </button>
+            <button class="sos-chip" data-sos="choking" title="Choking (Heimlich Maneuver)" data-testid="sos-chip-choking">
+              <i class="ph-bold ph-hand-palm" aria-hidden="true"></i>
+              <span>Choke</span>
+            </button>
+            <button class="sos-chip" data-sos="bleed" title="Severe Bleeding & Hemorrhage" data-testid="sos-chip-bleed">
+              <i class="ph-bold ph-drop" aria-hidden="true"></i>
+              <span>Bleed</span>
+            </button>
+          </div>
+          <div class="sos-call-row">
+            <a href="tel:112" class="sos-call-btn" id="sos-call-btn" title="Direct call emergency services (112 / 911)" data-testid="sos-call-btn">
+              <i class="ph-bold ph-phone-call" aria-hidden="true"></i>
+              <span>Call Emergency (112 / 911)</span>
+            </a>
+          </div>
+        </div>
         <div class="botanical-note" aria-hidden="true"><img
             src="https://images.unsplash.com/photo-1683298448135-4f2419cf9575?auto=format&amp;fit=crop&amp;w=550&amp;q=85"
             alt="" loading="lazy">
@@ -3313,6 +3892,263 @@
     <div class="dialog-foot"><i class="ph ph-arrow-square-out" aria-hidden="true"></i>These resources open
       independently; listing is not an endorsement.</div>
   </dialog>
+  <dialog id="sos-dialog" data-testid="sos-dialog" aria-labelledby="sos-dialog-title" class="sos-dialog">
+    <div class="dialog-head">
+      <div class="sos-dialog-title-wrap">
+        <div class="sos-dialog-beacon"><i class="ph-bold ph-first-aid" aria-hidden="true"></i></div>
+        <div>
+          <h2 id="sos-dialog-title">Emergency SOS &amp; First-Aid Guide</h2>
+          <p>Immediate action protocols for acute medical emergencies.</p>
+        </div>
+      </div>
+      <button class="icon-btn" data-close aria-label="Close emergency guide" data-testid="close-sos-button">
+        <i class="ph ph-x" aria-hidden="true"></i>
+      </button>
+    </div>
+    <div class="dialog-body sos-dialog-body">
+      <div class="sos-banner">
+        <div class="sos-banner-left">
+          <i class="ph-bold ph-phone-call" aria-hidden="true"></i>
+          <div>
+            <strong>In a life-threatening emergency, call for help first!</strong>
+            <span>Do not delay professional medical dispatch. ClinIQ is an educational reference.</span>
+          </div>
+        </div>
+        <div class="sos-hotlines">
+          <a href="tel:112" class="sos-hotline-btn primary" title="Call 112 (Universal Emergency / EU / India)" data-testid="sos-hotline-112">
+            <span class="hotline-num">112</span>
+            <span class="hotline-lbl">Global / EU / IN</span>
+          </a>
+          <a href="tel:911" class="sos-hotline-btn" title="Call 911 (US & Canada)" data-testid="sos-hotline-911">
+            <span class="hotline-num">911</span>
+            <span class="hotline-lbl">US / CAN</span>
+          </a>
+          <a href="tel:999" class="sos-hotline-btn" title="Call 999 (United Kingdom)" data-testid="sos-hotline-999">
+            <span class="hotline-num">999</span>
+            <span class="hotline-lbl">UK</span>
+          </a>
+          <a href="tel:18002221222" class="sos-hotline-btn" title="Poison Help Hotline (US)" data-testid="sos-hotline-poison">
+            <span class="hotline-num">Poison</span>
+            <span class="hotline-lbl">1-800-222-1222</span>
+          </a>
+          <a href="tel:988" class="sos-hotline-btn" title="Suicide & Crisis Lifeline" data-testid="sos-hotline-988">
+            <span class="hotline-num">988</span>
+            <span class="hotline-lbl">Crisis / 988</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="sos-nav-tabs" role="tablist" aria-label="Emergency Guides">
+        <button class="sos-tab active" data-target="sos-cpr" role="tab" aria-selected="true" data-testid="sos-tab-cpr"><i class="ph-bold ph-heartbeat"></i>CPR</button>
+        <button class="sos-tab" data-target="sos-stroke" role="tab" aria-selected="false" data-testid="sos-tab-stroke"><i class="ph-bold ph-brain"></i>Stroke (FAST)</button>
+        <button class="sos-tab" data-target="sos-choking" role="tab" aria-selected="false" data-testid="sos-tab-choking"><i class="ph-bold ph-hand-palm"></i>Choking</button>
+        <button class="sos-tab" data-target="sos-bleed" role="tab" aria-selected="false" data-testid="sos-tab-bleed"><i class="ph-bold ph-drop"></i>Severe Bleeding</button>
+        <button class="sos-tab" data-target="sos-heart" role="tab" aria-selected="false" data-testid="sos-tab-heart"><i class="ph-bold ph-heart-break"></i>Heart Attack</button>
+        <button class="sos-tab" data-target="sos-anaphylaxis" role="tab" aria-selected="false" data-testid="sos-tab-anaphylaxis"><i class="ph-bold ph-shield-warning"></i>Allergy (EpiPen)</button>
+        <button class="sos-tab" data-target="sos-seizure" role="tab" aria-selected="false" data-testid="sos-tab-seizure"><i class="ph-bold ph-activity"></i>Seizure</button>
+        <button class="sos-tab" data-target="sos-burns" role="tab" aria-selected="false" data-testid="sos-tab-burns"><i class="ph-bold ph-flame"></i>Burns</button>
+      </div>
+
+      <div class="sos-protocols">
+        <article class="sos-protocol-card active" id="sos-cpr" data-testid="proto-cpr">
+          <div class="proto-header">
+            <div class="proto-title">
+              <span class="proto-icon"><i class="ph-bold ph-heartbeat"></i></span>
+              <div>
+                <h3>Cardiopulmonary Resuscitation (Hands-Only CPR)</h3>
+                <span class="proto-tag tag-critical">Unresponsive &amp; Not Breathing Normally</span>
+              </div>
+            </div>
+            <a href="tel:112" class="proto-call-quick"><i class="ph-bold ph-phone"></i>Call 112 / 911</a>
+          </div>
+          <ol class="proto-steps">
+            <li><strong>Check Response:</strong> Tap shoulders firmly and shout loudly: <em>"Are you okay?"</em> Check chest for normal breathing (occasional gasping is NOT breathing).</li>
+            <li><strong>Call 911 / 112 &amp; Get an AED:</strong> Put your phone on speaker. Shout for a bystander to bring an Automated External Defibrillator (AED) immediately.</li>
+            <li><strong>Hand Position:</strong> Place the heel of one hand in the center of the chest (lower breastbone). Interlock fingers of your other hand on top. Lock elbows straight.</li>
+            <li><strong>Push Hard &amp; Fast:</strong> Compress at <strong>100–120 beats per minute</strong> (to the rhythm of the song <em>"Stayin' Alive"</em>). Push at least <strong>2 inches (5 cm) deep</strong>. Allow chest to fully recoil after each push.</li>
+            <li><strong>Continuous Compressions:</strong> Do not interrupt compressions until EMS personnel arrive or an AED is powered on and prompting you.</li>
+          </ol>
+          <div class="proto-danger">
+            <i class="ph-bold ph-warning-circle"></i>
+            <span><strong>NEVER stop compressions</strong> to check for a pulse if untrained. Continuous hands-only compressions maintain vital blood flow to the brain and heart.</span>
+          </div>
+        </article>
+
+        <article class="sos-protocol-card" id="sos-stroke" data-testid="proto-stroke">
+          <div class="proto-header">
+            <div class="proto-title">
+              <span class="proto-icon"><i class="ph-bold ph-brain"></i></span>
+              <div>
+                <h3>Stroke Emergency — The F.A.S.T. Assessment</h3>
+                <span class="proto-tag tag-urgent">Time Is Brain Tissue</span>
+              </div>
+            </div>
+            <a href="tel:112" class="proto-call-quick"><i class="ph-bold ph-phone"></i>Call 112 / 911</a>
+          </div>
+          <div class="fast-grid">
+            <div class="fast-cell">
+              <span class="fast-letter">F</span>
+              <strong>Face Drooping</strong>
+              <p>Ask them to smile. Does one side of the face droop or look uneven?</p>
+            </div>
+            <div class="fast-cell">
+              <span class="fast-letter">A</span>
+              <strong>Arm Weakness</strong>
+              <p>Ask them to raise both arms. Does one arm drift downward or feel numb?</p>
+            </div>
+            <div class="fast-cell">
+              <span class="fast-letter">S</span>
+              <strong>Speech Difficulty</strong>
+              <p>Ask them to repeat: <em>"The sky is blue."</em> Is words slurred, garbled, or hard to understand?</p>
+            </div>
+            <div class="fast-cell">
+              <span class="fast-letter">T</span>
+              <strong>Time to Call 911 / 112</strong>
+              <p>If they show ANY of these signs, call emergency immediately. Note the exact time symptoms began!</p>
+            </div>
+          </div>
+          <div class="proto-danger">
+            <i class="ph-bold ph-x-circle"></i>
+            <span><strong>DO NOT give food, drinks, or aspirin!</strong> If the stroke is hemorrhagic (bleeding in brain), aspirin or blood thinners can worsen bleeding.</span>
+          </div>
+        </article>
+
+        <article class="sos-protocol-card" id="sos-choking" data-testid="proto-choking">
+          <div class="proto-header">
+            <div class="proto-title">
+              <span class="proto-icon"><i class="ph-bold ph-hand-palm"></i></span>
+              <div>
+                <h3>Choking Relief — Heimlich Maneuver</h3>
+                <span class="proto-tag tag-critical">Airway Obstruction</span>
+              </div>
+            </div>
+            <a href="tel:112" class="proto-call-quick"><i class="ph-bold ph-phone"></i>Call 112 / 911</a>
+          </div>
+          <ol class="proto-steps">
+            <li><strong>Assess Airway:</strong> Ask: <em>"Are you choking?"</em> If they can speak, cough forcefully, or breathe, encourage them to keep coughing. Do NOT interfere.</li>
+            <li><strong>5 Firm Back Blows:</strong> If unable to breathe, cough, or speak (silent coughing, hands clutching throat), lean them forward. Deliver 5 firm blows between shoulder blades with the heel of your hand.</li>
+            <li><strong>5 Abdominal Thrusts (Heimlich):</strong> Stand behind the person. Wrap arms around their waist. Make a fist with thumb side against their abdomen, just above the navel. Grasp fist with your other hand.</li>
+            <li><strong>Thrust Inward &amp; Upward:</strong> Pull sharply inward and upward 5 times as if lifting the person off their feet.</li>
+            <li><strong>Repeat 5 and 5:</strong> Alternate 5 back blows and 5 abdominal thrusts until the blockage pops out or person can breathe.</li>
+            <li><strong>If person goes unconscious:</strong> Lower them to the ground, call emergency immediately, and begin CPR compressions.</li>
+          </ol>
+        </article>
+
+        <article class="sos-protocol-card" id="sos-bleed" data-testid="proto-bleed">
+          <div class="proto-header">
+            <div class="proto-title">
+              <span class="proto-icon"><i class="ph-bold ph-drop"></i></span>
+              <div>
+                <h3>Severe Bleeding &amp; Hemorrhage Control</h3>
+                <span class="proto-tag tag-urgent">Rapid Blood Loss</span>
+              </div>
+            </div>
+            <a href="tel:112" class="proto-call-quick"><i class="ph-bold ph-phone"></i>Call 112 / 911</a>
+          </div>
+          <ol class="proto-steps">
+            <li><strong>Call emergency dispatch</strong> if bleeding is pulsing, spurting, pooling, or does not slow after pressure.</li>
+            <li><strong>Direct Firm Pressure:</strong> Cover the wound with a clean cloth, sterile gauze, or clothing. Press down firmly with both hands using your body weight.</li>
+            <li><strong>Maintain Continuous Pressure:</strong> Do NOT lift the cloth to peek. If blood soaks through, add more layers on top and continue pressing hard.</li>
+            <li><strong>Elevate:</strong> If on an arm or leg and no broken bones are suspected, elevate the injured limb above the heart.</li>
+            <li><strong>Tourniquet (Severe limb trauma):</strong> If spurting blood from an arm or leg won't stop, apply a commercial tourniquet 2–3 inches above the wound (never over a joint). Tighten until bleeding stops. Record the exact time applied.</li>
+          </ol>
+          <div class="proto-danger">
+            <i class="ph-bold ph-warning-circle"></i>
+            <span><strong>NEVER remove impaled objects</strong> (e.g. knives, glass shards). Stabilize the object in place with rolled cloths and wait for emergency surgeons.</span>
+          </div>
+        </article>
+
+        <article class="sos-protocol-card" id="sos-heart" data-testid="proto-heart">
+          <div class="proto-header">
+            <div class="proto-title">
+              <span class="proto-icon"><i class="ph-bold ph-heart-break"></i></span>
+              <div>
+                <h3>Heart Attack (Myocardial Infarction)</h3>
+                <span class="proto-tag tag-urgent">Chest Tightness / Radiating Pain</span>
+              </div>
+            </div>
+            <a href="tel:112" class="proto-call-quick"><i class="ph-bold ph-phone"></i>Call 112 / 911</a>
+          </div>
+          <ol class="proto-steps">
+            <li><strong>Recognize Symptoms:</strong> Crushing chest tightness or squeezing; pain radiating to left shoulder, arm, neck, or jaw; shortness of breath, clammy cold sweat, nausea.</li>
+            <li><strong>Call 911 / 112 immediately:</strong> Every minute saved protects heart muscle. Do not attempt to drive yourself.</li>
+            <li><strong>Rest in W-Position:</strong> Have the person sit on the floor, leaning back against a wall with knees bent and supported. Loosen tight collars, ties, and belts.</li>
+            <li><strong>Chew Aspirin (if eligible):</strong> If not allergic, not told to avoid aspirin by a doctor, and no active bleeding, offer 1 adult aspirin (325 mg) or 2–4 low-dose baby aspirins (chewed, not swallowed whole).</li>
+            <li><strong>Be CPR-Ready:</strong> If the person loses consciousness and stops breathing normally, begin CPR immediately.</li>
+          </ol>
+        </article>
+
+        <article class="sos-protocol-card" id="sos-anaphylaxis" data-testid="proto-anaphylaxis">
+          <div class="proto-header">
+            <div class="proto-title">
+              <span class="proto-icon"><i class="ph-bold ph-shield-warning"></i></span>
+              <div>
+                <h3>Severe Allergic Reaction (Anaphylaxis)</h3>
+                <span class="proto-tag tag-critical">Airway Swelling / Epinephrine</span>
+              </div>
+            </div>
+            <a href="tel:112" class="proto-call-quick"><i class="ph-bold ph-phone"></i>Call 112 / 911</a>
+          </div>
+          <ol class="proto-steps">
+            <li><strong>Warning Signs:</strong> Swelling of throat, lips, or tongue; difficulty breathing, audible wheezing; widespread hives, dizziness, vomiting, rapid weak pulse.</li>
+            <li><strong>Inject Epinephrine (EpiPen):</strong> Remove safety cap. Push the orange/needle tip firmly into the <strong>outer middle thigh</strong> (can go directly through pants). Hold firmly for 3 seconds. Massage area for 10 seconds.</li>
+            <li><strong>Call Emergency Immediately:</strong> Always call 911 / 112 even if symptoms appear to improve—a secondary rebound reaction can occur within hours.</li>
+            <li><strong>Positioning:</strong> Lay person flat with legs elevated. If breathing is difficult or they are vomiting, allow them to sit upright.</li>
+            <li><strong>Second Dose:</strong> If symptoms do not improve after 5 to 15 minutes and paramedics have not arrived, administer a second auto-injector in the other leg.</li>
+          </ol>
+        </article>
+
+        <article class="sos-protocol-card" id="sos-seizure" data-testid="proto-seizure">
+          <div class="proto-header">
+            <div class="proto-title">
+              <span class="proto-icon"><i class="ph-bold ph-activity"></i></span>
+              <div>
+                <h3>Seizures &amp; Convulsions</h3>
+                <span class="proto-tag tag-urgent">Protect Airway &amp; Head</span>
+              </div>
+            </div>
+            <a href="tel:112" class="proto-call-quick"><i class="ph-bold ph-phone"></i>Call 112 / 911</a>
+          </div>
+          <ol class="proto-steps">
+            <li><strong>Cushion the head:</strong> Place a folded jacket, pillow, or hands under their head. Clear away nearby hard, sharp, or dangerous objects.</li>
+            <li><strong>Time the Seizure:</strong> Note the start time. Call 911 / 112 if seizure lasts <strong>longer than 5 minutes</strong>, if a second seizure begins immediately, or if the person is injured or pregnant.</li>
+            <li><strong>Recovery Position:</strong> Once active jerking stops, roll the person gently onto their side into the recovery position so saliva/fluids drain from mouth.</li>
+            <li><strong>Stay Calm &amp; Reassure:</strong> Stay with the person until they are fully awake and alert.</li>
+          </ol>
+          <div class="proto-danger">
+            <i class="ph-bold ph-x-circle"></i>
+            <span><strong>NEVER hold them down or put ANYTHING in their mouth!</strong> It is impossible to swallow the tongue, and objects can shatter teeth or completely choke the airway.</span>
+          </div>
+        </article>
+
+        <article class="sos-protocol-card" id="sos-burns" data-testid="proto-burns">
+          <div class="proto-header">
+            <div class="proto-title">
+              <span class="proto-icon"><i class="ph-bold ph-flame"></i></span>
+              <div>
+                <h3>Severe Burns &amp; Scalds</h3>
+                <span class="proto-tag tag-urgent">Cool &amp; Protect</span>
+              </div>
+            </div>
+            <a href="tel:112" class="proto-call-quick"><i class="ph-bold ph-phone"></i>Call 112 / 911</a>
+          </div>
+          <ol class="proto-steps">
+            <li><strong>Cool with running water:</strong> Hold the burned skin under cool running tap water for <strong>10 to 20 minutes</strong>. Do NOT use ice, freezing water, or butter/toothpaste (causes severe tissue damage and infection).</li>
+            <li><strong>Remove jewelry/tight items:</strong> Gently remove rings, bracelets, or loose clothing before rapid swelling begins. Do NOT peel away clothing stuck to the burn.</li>
+            <li><strong>Cover loosely:</strong> Cover the burn with a clean, sterile non-adherent dressing or clean plastic food wrap.</li>
+            <li><strong>Call 911 / 112 if:</strong> Burn is larger than the person's hand, covers the face, hands, feet, or groin, or is caused by electricity or chemicals.</li>
+          </ol>
+          <div class="proto-danger">
+            <i class="ph-bold ph-warning-circle"></i>
+            <span><strong>DO NOT pop blisters!</strong> Intact blister skin is a natural sterile barrier against life-threatening bacterial infections.</span>
+          </div>
+        </article>
+      </div>
+    </div>
+    <div class="dialog-foot">
+      <span><i class="ph ph-shield-check"></i>ClinIQ SOS Reference · Grounded First-Aid Standards (AHA &amp; Red Cross guidelines)</span>
+    </div>
+  </dialog>
   <dialog id="about-dialog" data-testid="about-dialog" aria-labelledby="about-dialog-title">
     <div class="dialog-head">
       <div>
@@ -3508,6 +4344,34 @@
       document.querySelectorAll('dialog').forEach(dialog => dialog.addEventListener('click', e => { if (e.target !== dialog) return; const r = dialog.getBoundingClientRect(); if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) dialog.close() }));
       $('new-chat').onclick = newConversation; $('brand-home').onclick = e => { e.preventDefault(); newConversation() }; $('assistant-nav').onclick = () => { closeSidebar(); $('query-input').focus({ preventScroll: true }) }; $('refresh-history').onclick = () => loadHistory(); $('open-sidebar').onclick = openSidebar; $('close-sidebar').onclick = closeSidebar; $('sidebar-backdrop').onclick = closeSidebar;
       $('search-nav').onclick = () => { renderSearch(); openDialog('search-dialog'); $('history-search').focus() }; $('history-search').oninput = renderSearch; $('sources-nav').onclick = () => openDialog('sources-dialog'); $('settings-trigger').onclick = () => openDialog('settings-dialog'); $('about-trigger').onclick = () => openDialog('about-dialog'); $('disclaimer-trigger').onclick = () => openDialog('about-dialog'); $('copy-user').onclick = () => copyText(userId);
+      function openSos(topicId = null) {
+        openDialog('sos-dialog');
+        if (topicId) {
+          const tab = document.querySelector(`.sos-tab[data-target="sos-${topicId}"]`);
+          if (tab) tab.click();
+        }
+      }
+      $('sos-expand-btn')?.addEventListener('click', () => openSos());
+      $('sos-badge-trigger')?.addEventListener('click', () => openSos());
+      document.querySelectorAll('.sos-chip').forEach(chip => {
+        chip.addEventListener('click', () => openSos(chip.dataset.sos));
+      });
+      document.querySelectorAll('.sos-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          document.querySelectorAll('.sos-tab').forEach(t => {
+            t.classList.remove('active');
+            t.setAttribute('aria-selected', 'false');
+          });
+          document.querySelectorAll('.sos-protocol-card').forEach(c => c.classList.remove('active'));
+          tab.classList.add('active');
+          tab.setAttribute('aria-selected', 'true');
+          const target = document.getElementById(tab.dataset.target);
+          if (target) {
+            target.classList.add('active');
+            target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+        });
+      });
       $('export-chat').onclick = exportChat; $('print-chat').onclick = () => window.print(); $('jump-latest').onclick = () => scrollBottom(); $('chat-scroll').addEventListener('scroll', () => { $('jump-latest').hidden = $('chat-scroll').scrollHeight - $('chat-scroll').scrollTop - $('chat-scroll').clientHeight < 160 || !messages.length }, { passive: true });
       const openConnection = () => { $('api-base-input').value = storage.get('apiBase') || configuredBase || ''; $('connection-result').textContent = ''; openDialog('connection-dialog') }; $('connection-status').onclick = openConnection; $('open-connection').onclick = openConnection;
       $('connection-form').onsubmit = async e => { e.preventDefault(); const value = $('api-base-input').value.trim().replace(/\/+$/, ''); if (!baseIsSafe(value)) { $('connection-result').textContent = 'Enter an http:// or https:// server URL without credentials, a query, or a fragment.'; return } if (location.protocol === 'https:' && value.startsWith('http:')) { $('connection-result').textContent = 'Use HTTPS: this secure page cannot connect to an insecure HTTP server.'; return } if (busy) { toast('Please stop the current request before changing servers.', true); return } stopRequest(false); stopAudio(); historyController?.abort(); historyEpoch++; sessions = []; messages = []; $('messages').replaceChildren(); showConversation(false); sessionId = uid('sess_'); syncContext(); storage.set('apiBase', value); apiBase = value || configuredBase || window.CLINIQ_PREVIEW_API_BASE || ''; setConnection('checking'); $('save-connection').disabled = true; $('connection-result').textContent = 'Checking your connection…'; try { const available = await loadHistory(); $('connection-result').textContent = available ? 'Connected. Your medical server is ready.' : 'Settings saved. The server is unavailable or does not expose the original ClinIQ endpoints. Check the URL, server status, and cross-origin access.'; if (available) toast('Connected to your ClinIQ server.') } finally { $('save-connection').disabled = false } };
