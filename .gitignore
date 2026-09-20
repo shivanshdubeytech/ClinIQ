@@ -16,12 +16,9 @@ __pycache__/
 .pytest_cache/
 
 # Database & Vector Store Artifacts
-chroma_db/
 cliniq.db
 
-# Generated Media / Audio Outputs
-*.mp3
-static/audio/*.mp3
+# Generated Media & Scratch Files
 scratch/
 
 # Operating System & IDE Files
