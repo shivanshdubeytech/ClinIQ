@@ -1,0 +1,31 @@
+# Environment & Secret Files
+.env
+*.env.local
+
+# Virtual Environments
+venv/
+env/
+ENV/
+.venv/
+
+# Python Bytecode & Cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Database & Vector Store Artifacts
+chroma_db/
+cliniq.db
+
+# Generated Media / Audio Outputs
+*.mp3
+static/audio/*.mp3
+scratch/
+
+# Operating System & IDE Files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

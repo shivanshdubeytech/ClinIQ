@@ -1,0 +1,17 @@
+# Vector database for storing and querying medical document embeddings
+chromadb==0.5.23
+
+# Framework for computing sentence and text embeddings locally
+sentence-transformers==3.3.1
+
+# Web interface framework for interactive Q&A
+streamlit==1.42.0
+
+# SDK for Groq API integration (Llama-3 LLM inference)
+groq==0.18.0
+
+# Library for loading environment variables from .env files
+python-dotenv==1.0.1
+
+# Google Text-to-Speech engine for audio responses
+gTTS==2.5.4
