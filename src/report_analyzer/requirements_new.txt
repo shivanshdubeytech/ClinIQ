@@ -1,0 +1,4 @@
+# Optional OCR enhancements for image processing (Rule 4: new packages listed here)
+# Note: Digital PDFs already work out-of-the-box with pre-installed pypdf and Pillow.
+pytesseract>=0.3.10
+pdf2image>=1.17.0

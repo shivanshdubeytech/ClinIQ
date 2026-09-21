@@ -2122,6 +2122,113 @@
       font-size: 12px
     }
 
+    .upload-clip-btn {
+      height: 33px;
+      width: 33px;
+      border-radius: 5px;
+      background: transparent;
+      border: 1px solid var(--border-strong, #c2cbbf);
+      color: var(--ink-light, #525a4d);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      transition: all 0.15s ease;
+      cursor: pointer;
+      margin-right: 4px;
+    }
+
+    .upload-clip-btn:hover {
+      background: var(--surface, #e8ede3);
+      color: var(--moss);
+      border-color: var(--moss);
+    }
+
+    [data-theme="dark"] .upload-clip-btn {
+      border-color: #2e3831;
+      color: #9daea2;
+    }
+
+    [data-theme="dark"] .upload-clip-btn:hover {
+      background: #1a221c;
+      color: #79a888;
+      border-color: #3e5042;
+    }
+
+    .report-badge-container {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      letter-spacing: 0.5px;
+    }
+
+    .report-badge-success {
+      background: #ecfdf5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+    }
+
+    .report-badge-warning {
+      background: #fffbeb;
+      color: #92400e;
+      border: 1px solid #fde68a;
+    }
+
+    .report-badge-danger {
+      background: #fef2f2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+    }
+
+    [data-theme="dark"] .report-badge-success {
+      background: #062817;
+      color: #6ee7b7;
+      border-color: #0f5132;
+    }
+
+    [data-theme="dark"] .report-badge-warning {
+      background: #2d1c03;
+      color: #fcd34d;
+      border-color: #5c3a06;
+    }
+
+    [data-theme="dark"] .report-badge-danger {
+      background: #2b0b0e;
+      color: #fca5a5;
+      border-color: #5c181f;
+    }
+
+    .md-content table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0;
+      font-size: 13px;
+    }
+
+    .md-content th, .md-content td {
+      border: 1px solid var(--border-subtle, #e2e7df);
+      padding: 8px 12px;
+      text-align: left;
+    }
+
+    .md-content th {
+      background: var(--surface, #f4f7f2);
+      font-weight: 600;
+    }
+
+    [data-theme="dark"] .md-content th, [data-theme="dark"] .md-content td {
+      border-color: #27342b;
+    }
+
+    [data-theme="dark"] .md-content th {
+      background: #151d17;
+    }
+
     .send-btn {
       height: 33px;
       min-width: 88px;
@@ -3817,6 +3924,8 @@
         <button id="assistant-nav" class="nav-btn active" data-testid="assistant-nav-button"><i
             class="ph ph-chat-circle-text" aria-hidden="true"></i>Health assistant<i
             class="ph ph-arrow-up-right ml-auto" style="font-size:13px;opacity:.55" aria-hidden="true"></i></button>
+        <button id="upload-report-nav-btn" class="nav-btn" type="button" title="Upload Medical Report or Prescription (PDF, Image)" data-testid="upload-report-nav-button"><i
+            class="ph ph-file-arrow-up" aria-hidden="true"></i>Analyze Report<span class="nav-count" style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px;background:var(--moss);color:#fff;">NEW</span></button>
         <button id="search-nav" class="nav-btn" data-testid="search-conversations-button"><i
             class="ph ph-magnifying-glass" aria-hidden="true"></i>Search conversations</button>
         <button id="sources-nav" class="nav-btn" data-testid="sources-nav-button"><i class="ph ph-books"
@@ -4025,7 +4134,12 @@
                 data-testid="question-input"></textarea></div>
             <div class="composer-bottom"><span class="composer-label" data-testid="composer-grounding-label"><i
                   class="ph ph-shield-check" aria-hidden="true"></i>Grounded in medical knowledge</span>
-              <div class="composer-right"><span class="composer-key" aria-hidden="true">Shift + Enter for a new
+              <div class="composer-right">
+                <input type="file" id="report-file-input" accept=".pdf,.png,.jpg,.jpeg,.webp,.txt" style="display:none;" />
+                <button id="upload-report-btn" type="button" class="upload-clip-btn" title="Upload Medical Report or Prescription (PDF, Image, Text)" aria-label="Upload Medical Report" data-testid="upload-report-clip-button">
+                  <i class="ph ph-paperclip" aria-hidden="true"></i>
+                </button>
+                <span class="composer-key" aria-hidden="true">Shift + Enter for a new
                   line</span><button id="send-button" type="submit" class="send-btn" aria-label="Send question"
                   data-testid="send-question-button" disabled><span id="send-label">Ask ClinIQ</span><i id="send-icon"
                     class="ph ph-arrow-up" aria-hidden="true"></i></button></div>
@@ -4522,6 +4636,121 @@
       function renderError(text, retry, label = 'Try again') { const node = document.createElement('div'); node.className = 'error-card'; node.dataset.testid = 'request-error-' + uid(''); node.setAttribute('role', 'alert'); node.innerHTML = `<strong>A small pause in the conversation.</strong><br>${esc(text)}<button class="retry-button" data-testid="retry-request-button">${icon('arrow-clockwise')}${esc(label)}</button>`; node.querySelector('button').onclick = () => { node.remove(); retry() }; $('messages').append(node); return node }
       function showLoader() { const node = document.createElement('div'); node.id = 'response-loader'; node.className = 'loading-card'; node.dataset.testid = 'response-loading'; node.innerHTML = '<span class="loading-dots" aria-hidden="true"><span></span><span></span><span></span></span><div><span data-testid="loading-stage">Looking for a grounded answer…</span><span class="loading-sub">Medical knowledge · Source evaluation · Response</span></div>'; $('messages').append(node) }
       async function submitQuestion(question, retry = false) { question = String(question || '').trim(); if (busy || !question) return; if (question.length > 5000) { toast('Please keep your question under 5,000 characters.', true); return } activeController?.abort(); const controller = new AbortController(); activeController = controller; const epoch = ++requestEpoch; const currentSession = sessionId; lastQuestion = question; setBusy(true); showConversation(true); $('messages').querySelectorAll('.error-card').forEach(el => el.remove()); $('query-input').value = ''; resizeInput(); if (!retry) { const message = { role: 'user', content: question, timestamp: new Date().toISOString() }; messages.push(message); renderMessage(message) } showLoader(); scrollBottom(); try { const data = await request('/api/query', { method: 'POST', data: { user_id: userId, session_id: currentSession, question }, signal: controller.signal, timeout: 120000 }); if (epoch !== requestEpoch || currentSession !== sessionId) return; if (typeof data?.answer !== 'string' || !data.answer.trim()) throw new Error('The server did not return an answer.'); $('response-loader')?.remove(); const answer = { role: 'assistant', content: data.answer, confidence: data.confidence, passed: data.passed, audio_url: data.audio_url, audio_path: data.audio_path, sources: data.sources, is_concerning: data.is_concerning, disclaimer: data.disclaimer, timestamp: new Date().toISOString() }; messages.push(answer); renderMessage(answer); lastQuestion = ''; setConnection('online'); loadHistory() } catch (error) { if (epoch !== requestEpoch || cancelError(error)) return; $('response-loader')?.remove(); setConnection('offline'); const detail = error?.response?.status === 429 ? 'The server is busy. Please wait a moment and try again.' : 'ClinIQ could not reach a medical answer. Check your server connection, then try again. No answer has been generated.'; renderError(detail, () => submitQuestion(question, true)); toast('Unable to reach your ClinIQ server.', true) } finally { if (epoch === requestEpoch) { setBusy(false); scrollBottom(); if (window.innerWidth >= 768) $('query-input').focus({ preventScroll: true }) } } }
+      async function handleReportUpload(file) {
+        if (!file) return;
+        if (busy) { toast('Please wait for the current request to complete.', true); return }
+        const allowed = ['.pdf', '.png', '.jpg', '.jpeg', '.webp', '.txt'];
+        const name = file.name || 'document.pdf';
+        const ext = '.' + name.split('.').pop().toLowerCase();
+        if (!allowed.includes(ext)) {
+          toast('Please upload a PDF, image (PNG, JPG, WEBP), or text medical report.', true);
+          return;
+        }
+        if (file.size > 20 * 1024 * 1024) {
+          toast('File is too large. Please upload a report under 20 MB.', true);
+          return;
+        }
+        showConversation(true);
+        $('messages').querySelectorAll('.error-card').forEach(el => el.remove());
+        setBusy(true);
+
+        const userMsg = {
+          role: 'user',
+          content: `📄 Uploaded Medical Document: **${name}** (${(file.size / 1024).toFixed(1)} KB)`,
+          timestamp: new Date().toISOString()
+        };
+        messages.push(userMsg);
+        renderMessage(userMsg);
+
+        showLoader();
+        const stageEl = document.querySelector('[data-testid="loading-stage"]');
+        if (stageEl) stageEl.textContent = 'Extracting and verifying medical report with trusted sources…';
+        const subEl = document.querySelector('.loading-sub');
+        if (subEl) subEl.textContent = 'Stage A-G: OCR · Deterministic Ranges · Drug Registry · Fact-Checking';
+        scrollBottom();
+
+        try {
+          const formData = new FormData();
+          formData.append('file', file);
+          const uploadUrl = endpoint('/api/analyze-report');
+          let data;
+          if (window.axios) {
+            const resp = await axios.post(uploadUrl, formData, {
+              headers: { 'Content-Type': 'multipart/form-data' },
+              timeout: 60000
+            });
+            data = resp.data;
+          } else {
+            const resp = await fetch(uploadUrl, { method: 'POST', body: formData });
+            if (!resp.ok) {
+              const errBody = await resp.json().catch(() => ({}));
+              throw new Error(errBody.error || `HTTP ${resp.status}`);
+            }
+            data = await resp.json();
+          }
+
+          $('response-loader')?.remove();
+          if (!data.is_success && data.error) throw new Error(data.error);
+
+          let badgeClass = 'report-badge-success';
+          let badgeIcon = 'check-circle';
+          if (data.overall_label === 'see a doctor soon') {
+            badgeClass = 'report-badge-danger';
+            badgeIcon = 'warning-octagon';
+          } else if (data.overall_label === 'low confidence - please verify') {
+            badgeClass = 'report-badge-warning';
+            badgeIcon = 'warning-circle';
+          }
+
+          const badgeHtml = `<div class="report-badge-container ${badgeClass}"><i class="ph ph-${badgeIcon}"></i> <span>STATUS: ${esc(data.overall_label.toUpperCase())}</span></div>\n\n`;
+
+          let content = badgeHtml;
+          if (data.critical_alert) {
+            content += `> ⚠️ **CRITICAL FINDING NOTICE:** ${data.critical_alert}\n\n`;
+          }
+          if (data.user_confirmation_table) {
+            content += `### 📋 Extracted Document Table (Please Confirm)\n${data.user_confirmation_table}\n\n`;
+          }
+          if (data.summary_markdown) {
+            content += `### 🩺 Plain-Language Medical Summary\n${data.summary_markdown}\n\n`;
+          }
+          if (data.disclaimer) {
+            content += `---\n*${data.disclaimer}*`;
+          }
+
+          const srcMap = new Map();
+          if (Array.isArray(data.items)) {
+            data.items.forEach(it => {
+              if (it.source_name) srcMap.set(it.source_name, it.source_url || '');
+            });
+          }
+          const sources = Array.from(srcMap.entries()).map(([label, url]) => ({ title: label, url: url || null }));
+
+          const assistantMsg = {
+            role: 'assistant',
+            content: content,
+            confidence: data.overall_confidence,
+            passed: data.overall_label !== 'low confidence - please verify',
+            sources: sources,
+            is_concerning: data.has_critical_findings,
+            disclaimer: data.disclaimer,
+            timestamp: new Date().toISOString()
+          };
+
+          messages.push(assistantMsg);
+          renderMessage(assistantMsg);
+          setConnection('online');
+          toast('Medical report analyzed successfully.');
+        } catch (err) {
+          $('response-loader')?.remove();
+          const errMsg = err?.response?.data?.error || err?.message || 'ClinIQ could not analyze the uploaded document.';
+          renderError(errMsg, () => handleReportUpload(file), 'Try analyzing again');
+          toast('Report analysis error: ' + errMsg, true);
+        } finally {
+          setBusy(false);
+          scrollBottom();
+        }
+      }
       const featureContent = { knowledge: { title: 'Knowledge, not guesswork.', subtitle: 'Medical context before a response.', body: '<h3>Grounded in a medical knowledge base.</h3><p>Your original ClinIQ server uses MedQuAD Q&A pairs and seed medical data, indexed with sentence-transformers and ChromaDB. Relevant passages are retrieved before an answer is generated.</p><p>Sources returned by your server are shown with each answer, so you can explore its supporting material. No source is added by this interface.</p>' }, confidence: { title: 'A little more certainty.', subtitle: 'Transparent checks. Important limits.', body: '<h3>A grounding score, not a diagnosis.</h3><p>The connected server returns a confidence score and a pass or refusal decision. The interface displays these values without inventing or recalculating them.</p><p>A high score indicates the server judged an answer faithful to retrieved material. It is not a calibrated probability of correctness, a clinical validation, or a guarantee that the answer applies to you.</p><h3>When the evidence is not enough.</h3><p>A response that fails the server’s evaluation is labeled as refusal-gated. Always review original sources and discuss health concerns with a qualified professional.</p>' }, voice: { title: 'Good answers. Out loud.', subtitle: 'A more accessible way to listen.', body: '<h3>Your answer, at your pace.</h3><p>When your existing server supplies a synthesized audio response, a voice player appears below the answer. Play, pause, seek, or change the pace from 0.75× to 2×.</p><p>Audio is provided by your ClinIQ server’s text-to-speech service. It is not generated in this HTML file, and no audio is created for a response that does not include one.</p>' } };
       function showFeature(key) { const f = featureContent[key]; if (!f) return; $('feature-dialog-title').textContent = f.title; $('feature-dialog-subtitle').textContent = f.subtitle; $('feature-dialog-body').innerHTML = f.body; stampTestIds($('feature-dialog')); openDialog('feature-dialog') }
       function exportChat() { if (!messages.length) { toast('Start a conversation before exporting.'); return } const lines = ['# ClinIQ · Your health conversation', '', new Date().toLocaleDateString(), '', ...messages.flatMap(m => ['## ' + (m.role === 'user' ? 'You' : 'ClinIQ'), '', ...(m.role === 'assistant' && (m.is_concerning || m.passed === false) ? ['> ⚠️ Seek medical help: ' + (m.disclaimer || 'Please consult a doctor or emergency services for medical symptoms.'), ''] : []), m.content, '', ...(m.role === 'assistant' && typeof m.confidence === 'number' ? ['Grounding score: ' + m.confidence + ' · ' + (m.passed === true ? 'Passed' : 'Refusal gated'), ''] : []), ...(Array.isArray(m.sources) && m.sources.length ? ['Sources:', ...m.sources.map(s => { const info = sourceInfo(s); return '- ' + info.label + (info.url && info.url !== info.label ? ' (' + info.url + ')' : '') }), ''] : [])]), '---', 'Educational reference only. Not medical advice. Always consult a qualified healthcare professional.']; const blob = new Blob([lines.join('\n')], { type: 'text/markdown;charset=utf-8' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'ClinIQ-' + sessionId + '.md'; a.dataset.testid = 'conversation-download-link'; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 5000); toast('Your conversation has been exported.') }
@@ -4540,6 +4769,13 @@
       document.querySelectorAll('dialog').forEach(dialog => dialog.addEventListener('click', e => { if (e.target !== dialog) return; const r = dialog.getBoundingClientRect(); if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) dialog.close() }));
       $('new-chat').onclick = newConversation; $('brand-home').onclick = e => { e.preventDefault(); newConversation() }; $('assistant-nav').onclick = () => { closeSidebar(); $('query-input').focus({ preventScroll: true }) }; $('refresh-history').onclick = () => loadHistory(); $('open-sidebar').onclick = openSidebar; $('close-sidebar').onclick = closeSidebar; $('sidebar-backdrop').onclick = closeSidebar;
       $('search-nav').onclick = () => { renderSearch(); openDialog('search-dialog'); $('history-search').focus() }; $('history-search').oninput = renderSearch; $('sources-nav').onclick = () => openDialog('sources-dialog'); $('settings-trigger').onclick = () => openDialog('settings-dialog'); $('about-trigger').onclick = () => openDialog('about-dialog'); $('disclaimer-trigger').onclick = () => openDialog('about-dialog'); $('copy-user').onclick = () => copyText(userId);
+      $('upload-report-btn')?.addEventListener('click', () => $('report-file-input')?.click());
+      $('upload-report-nav-btn')?.addEventListener('click', () => { closeSidebar(); $('report-file-input')?.click(); });
+      $('report-file-input')?.addEventListener('change', e => {
+        const file = e.target.files?.[0];
+        if (file) handleReportUpload(file);
+        e.target.value = '';
+      });
       function openSos(topicId = null) {
         openDialog('sos-dialog');
         if (topicId) {

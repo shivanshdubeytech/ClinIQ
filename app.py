@@ -19,6 +19,16 @@ _venv_site = PROJECT_ROOT / "venv" / "Lib" / "site-packages"
 if _venv_site.exists() and str(_venv_site) not in sys.path:
     sys.path.insert(0, str(_venv_site))
 
+import site
+_candidates = [
+    site.getusersitepackages(),
+    os.path.expanduser(r"~\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages"),
+    os.path.expanduser(r"~\AppData\Roaming\Python\Python39\site-packages"),
+]
+for _p in _candidates:
+    if _p and _p not in sys.path and Path(_p).exists():
+        sys.path.append(str(_p))
+
 # Ensure stdout handles UTF-8 unicode printing on Windows
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
@@ -164,6 +174,37 @@ def api_get_audio(filename):
     except Exception as err:
         logger.error(f"Error serving audio file '{filename}': {err}")
         return jsonify({"error": "Audio file not found."}), 404
+
+
+@app.route("/api/analyze-report", methods=["POST"])
+def api_analyze_report():
+    """Upload and analyze a medical report or prescription document (PDF or image)."""
+    import tempfile
+    from werkzeug.utils import secure_filename
+    from src.report_analyzer import analyze_medical_document
+
+    try:
+        if "file" not in request.files:
+            return jsonify({"error": "No file uploaded. Please attach a medical report or prescription."}), 400
+
+        uploaded_file = request.files["file"]
+        if not uploaded_file.filename:
+            return jsonify({"error": "Selected file has no filename."}), 400
+
+        # Create temporary storage with immediate auto-cleanup after processing (Rule 8)
+        temp_dir = Path(tempfile.gettempdir()) / "cliniq_uploads"
+        temp_dir.mkdir(parents=True, exist_ok=True)
+        safe_name = secure_filename(uploaded_file.filename) or "report_upload.pdf"
+        temp_path = temp_dir / safe_name
+        uploaded_file.save(str(temp_path))
+
+        # Run Stage A-G pipeline and safely delete temporary file (Rule 8)
+        analysis_result = analyze_medical_document(temp_path, auto_delete_temp=True)
+        return jsonify(analysis_result.to_dict())
+
+    except Exception as err:
+        logger.error(f"Error in /api/analyze-report: {err}")
+        return jsonify({"error": str(err)}), 500
 
 
 if __name__ == "__main__":
