@@ -15,20 +15,15 @@
   <title>ClinIQ — Health, with a little more clarity.</title>
   <link rel="icon"
     href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%2314352b'/%3E%3Cpath d='M26 13h12v13h13v12H38v13H26V38H13V26h13z' fill='%23d8edb3'/%3E%3C/svg%3E">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Plus+Jakarta+Sans:wght@400;450;500;550;600;650;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
-    rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
-  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <script>if (window.tailwind) tailwind.config = { theme: { extend: { colors: { moss: '#1f4233', ceramic: '#fbfbf9', lime: '#d8edb3' }, fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'], serif: ['Playfair Display', 'serif'], mono: ['JetBrains Mono', 'monospace'] } } } };</script>
-  <script defer src="https://cdn.jsdelivr.net/npm/axios@1/dist/axios.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/marked@15/marked.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <link rel="stylesheet" href="/static/vendor/tailwind.css">
+  <link rel="stylesheet" href="/static/vendor/swiper-bundle.min.css">
+  <link rel="stylesheet" href="/static/vendor/phosphor-regular.css">
+  <link rel="stylesheet" href="/static/vendor/fonts.css">
+  <script defer src="/static/vendor/axios.min.js"></script>
+  <script defer src="/static/vendor/swiper-bundle.min.js"></script>
+  <script defer src="/static/vendor/marked.min.js"></script>
+  <script defer src="/static/vendor/purify.min.js"></script>
+  <script defer src="/static/vendor/three.min.js"></script>
   <style>
     :root {
       --paper: #fbfbf9;
@@ -4013,7 +4008,7 @@
       </header>
       <div id="chat-scroll" class="scroll-viewport" tabindex="-1">
         <div class="content">
-          <section id="welcome" class="welcome" aria-labelledby="welcome-title">
+          <section id="welcome" class="welcome" aria-labelledby="welcome-title" {% if demo in ['chat', 'report'] %}hidden{% endif %}>
             <div class="welcome-eyebrow" data-testid="welcome-eyebrow"><i class="ph ph-sparkle" aria-hidden="true"></i>A
               THOUGHTFUL APPROACH TO YOUR HEALTH</div>
             <div class="welcome-intro">
@@ -4104,7 +4099,7 @@
               </div>
             </section>
           </section>
-          <section id="conversation" aria-labelledby="conversation-title" hidden>
+          <section id="conversation" aria-labelledby="conversation-title" {% if demo not in ['chat', 'report'] %}hidden{% endif %}>
             <div class="chat-heading">
               <div>
                 <h1 id="conversation-title" data-testid="conversation-title">A clearer picture.</h1>
@@ -4113,11 +4108,75 @@
               <div class="chat-tools"><button id="export-chat" class="icon-btn" aria-label="Export conversation"
                   title="Export conversation" data-testid="export-conversation-button"><i class="ph ph-download-simple"
                     aria-hidden="true"></i></button><button id="print-chat" class="icon-btn"
-                  aria-label="Print conversation" title="Print conversation" data-testid="print-conversation-button"><i
+                    aria-label="Print conversation" title="Print conversation" data-testid="print-conversation-button"><i
                     class="ph ph-printer" aria-hidden="true"></i></button></div>
             </div>
             <div id="messages" class="messages" role="log" aria-live="polite" aria-relevant="additions"
-              data-testid="messages-feed"></div>
+              data-testid="messages-feed">
+              {% if demo == 'chat' %}
+              <article class="message user" data-testid="message-1">
+                <div class="message-header"><span class="message-avatar"><i class="ph ph-user"></i></span><span>You</span><span class="message-time mono">Just now</span></div>
+                <div class="user-content">What causes high blood pressure and how is it managed?</div>
+              </article>
+              <article class="message assistant" data-testid="message-2">
+                <div class="message-header"><span class="message-avatar"><i class="ph ph-sparkle"></i></span><span>ClinIQ</span><span class="message-time mono">Just now</span></div>
+                <div class="assistant-content">
+                  <div class="confidence-badge-wrap" style="margin-bottom:12px;"><span class="badge" style="background:rgba(16,185,129,0.15);color:#34d399;border:1px solid rgba(16,185,129,0.3);padding:4px 10px;border-radius:9999px;font-size:12px;font-weight:600;"><i class="ph ph-shield-check"></i> High Grounding Confidence (0.94)</span></div>
+                  <h3 style="font-size:18px;font-weight:700;margin-bottom:8px;">Understanding Hypertension (High Blood Pressure)</h3>
+                  <p style="margin-bottom:12px;line-height:1.6;">High blood pressure occurs when the force of blood flowing through your blood vessels is consistently elevated (clinically defined as <strong>&ge; 130/80 mmHg</strong>).</p>
+                  <h4 style="font-size:15px;font-weight:600;margin-bottom:6px;">Primary Factors:</h4>
+                  <ul style="margin-bottom:12px;padding-left:20px;line-height:1.6;">
+                    <li><strong>Essential Hypertension (90–95% of cases):</strong> Gradual onset influenced by genetics, dietary sodium, arterial stiffness, and physical inactivity.</li>
+                    <li><strong>Secondary Causes:</strong> Underlying conditions such as renal disease, sleep apnea, or endocrine disorders.</li>
+                  </ul>
+                  <h4 style="font-size:15px;font-weight:600;margin-bottom:6px;">Evidence-Based Management:</h4>
+                  <ol style="margin-bottom:16px;padding-left:20px;line-height:1.6;">
+                    <li><strong>Lifestyle Interventions:</strong> DASH eating pattern, sodium restriction (&lt; 2,300 mg/day), regular aerobic exercise, and weight management.</li>
+                    <li><strong>Pharmacotherapy:</strong> First-line agents (ACE inhibitors, ARBs, CCBs, or thiazides) guided by clinical risk assessment.</li>
+                  </ol>
+                  <div class="sources-wrap" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px;margin-top:16px;">
+                    <div style="font-size:12px;text-transform:uppercase;color:#94a3b8;margin-bottom:6px;font-weight:600;"><i class="ph ph-books"></i> Verified Clinical Evidence Sources</div>
+                    <div style="font-size:13px;display:flex;flex-direction:column;gap:4px;">
+                      <a href="https://www.acc.org" style="color:#60a5fa;text-decoration:none;">• ACC/AHA Guideline for the Prevention, Detection, Evaluation and Management of High Blood Pressure</a>
+                      <a href="https://www.nhlbi.nih.gov" style="color:#60a5fa;text-decoration:none;">• NIH NHLBI: High Blood Pressure Causes, Symptoms, and Clinical Guidelines</a>
+                      <a href="https://www.cdc.gov" style="color:#60a5fa;text-decoration:none;">• CDC Division for Heart Disease and Stroke Prevention: High Blood Pressure Facts</a>
+                    </div>
+                  </div>
+                </div>
+              </article>
+              {% elif request.args.get('demo') == 'report' %}
+              <article class="message user" data-testid="message-1">
+                <div class="message-header"><span class="message-avatar"><i class="ph ph-user"></i></span><span>You</span><span class="message-time mono">Just now</span></div>
+                <div class="user-content">Attached: Comprehensive Metabolic Panel (CMP) Lab Report</div>
+              </article>
+              <article class="message assistant" data-testid="message-2">
+                <div class="message-header"><span class="message-avatar"><i class="ph ph-sparkle"></i></span><span>ClinIQ</span><span class="message-time mono">Just now</span></div>
+                <div class="assistant-content">
+                  <div class="report-badge-container" style="background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.3);padding:6px 12px;border-radius:8px;font-weight:700;display:inline-flex;align-items:center;gap:8px;margin-bottom:14px;"><i class="ph ph-warning-octagon"></i> <span>STATUS: SEE A DOCTOR SOON</span></div>
+                  <div style="background:rgba(239,68,68,0.1);border-left:4px solid #ef4444;padding:12px 16px;border-radius:4px;margin-bottom:16px;color:#fca5a5;">
+                    ⚠️ <strong>CRITICAL FINDING NOTICE:</strong> Potassium (6.2 mEq/L) is dangerously high (&ge; 6.2 mEq/L). Immediate medical evaluation recommended.
+                  </div>
+                  <h3 style="font-size:16px;font-weight:700;margin-bottom:10px;">📋 Extracted Document Table (Deterministic Evaluation)</h3>
+                  <table style="width:100%;border-collapse:collapse;margin-bottom:16px;font-size:13px;">
+                    <thead><tr style="border-bottom:1px solid rgba(255,255,255,0.15);text-align:left;"><th style="padding:8px;">Test Name</th><th style="padding:8px;">Result</th><th style="padding:8px;">Unit</th><th style="padding:8px;">Ref Range</th><th style="padding:8px;">Evaluation</th><th style="padding:8px;">Critical</th></tr></thead>
+                    <tbody>
+                      <tr style="background:rgba(239,68,68,0.08);border-bottom:1px solid rgba(255,255,255,0.05);"><td style="padding:8px;"><strong>Potassium</strong></td><td style="padding:8px;color:#f87171;font-weight:700;">6.2</td><td style="padding:8px;">mEq/L</td><td style="padding:8px;">3.5 - 5.2</td><td style="padding:8px;"><span style="color:#f87171;font-weight:700;">HIGH</span></td><td style="padding:8px;color:#f87171;">⚠️ <strong>YES</strong></td></tr>
+                      <tr style="border-bottom:1px solid rgba(255,255,255,0.05);"><td style="padding:8px;"><strong>Fasting Glucose</strong></td><td style="padding:8px;color:#fbbf24;font-weight:600;">145</td><td style="padding:8px;">mg/dL</td><td style="padding:8px;">70 - 99</td><td style="padding:8px;"><span style="color:#fbbf24;font-weight:600;">HIGH</span></td><td style="padding:8px;">No</td></tr>
+                      <tr style="border-bottom:1px solid rgba(255,255,255,0.05);"><td style="padding:8px;">Serum Sodium</td><td style="padding:8px;">140</td><td style="padding:8px;">mEq/L</td><td style="padding:8px;">135 - 145</td><td style="padding:8px;"><span style="color:#34d399;">NORMAL</span></td><td style="padding:8px;">No</td></tr>
+                      <tr style="border-bottom:1px solid rgba(255,255,255,0.05);"><td style="padding:8px;">Serum Creatinine</td><td style="padding:8px;">1.1</td><td style="padding:8px;">mg/dL</td><td style="padding:8px;">0.6 - 1.3</td><td style="padding:8px;"><span style="color:#34d399;">NORMAL</span></td><td style="padding:8px;">No</td></tr>
+                      <tr style="border-bottom:1px solid rgba(255,255,255,0.05);"><td style="padding:8px;">Hemoglobin</td><td style="padding:8px;">14.8</td><td style="padding:8px;">g/dL</td><td style="padding:8px;">13.8 - 17.2</td><td style="padding:8px;"><span style="color:#34d399;">NORMAL</span></td><td style="padding:8px;">No</td></tr>
+                    </tbody>
+                  </table>
+                  <h3 style="font-size:16px;font-weight:700;margin-bottom:8px;">🩺 Plain-Language Medical Summary</h3>
+                  <ul style="line-height:1.6;margin-bottom:12px;padding-left:20px;">
+                    <li><strong>Potassium (6.2 mEq/L):</strong> Markedly elevated above the reference ceiling. Severe hyperkalemia poses acute cardiac conduction risks and requires prompt hospital evaluation.</li>
+                    <li><strong>Fasting Glucose (145 mg/dL):</strong> Exceeds normal fasting glucose thresholds (&lt; 100 mg/dL), consistent with impaired glucose metabolism.</li>
+                  </ul>
+                  <p style="font-size:12px;color:#94a3b8;font-style:italic;">ClinIQ lab analysis is deterministic and rule-based. Always verify laboratory results with your ordering physician.</p>
+                </div>
+              </article>
+              {% endif %}
+            </div>
             <p class="print-only">ClinIQ · Educational reference only. Not medical advice.</p>
           </section>
         </div>
@@ -4189,7 +4248,8 @@
     <div class="dialog-foot"><i class="ph ph-arrow-square-out" aria-hidden="true"></i>These resources open
       independently; listing is not an endorsement.</div>
   </dialog>
-  <dialog id="sos-dialog" data-testid="sos-dialog" aria-labelledby="sos-dialog-title" class="sos-dialog">
+  {% if demo == 'sos' %}<div style="position:fixed;inset:0;background:rgba(0,0,0,0.65);backdrop-filter:blur(4px);z-index:99998;"></div>{% endif %}
+  <dialog id="sos-dialog" data-testid="sos-dialog" aria-labelledby="sos-dialog-title" class="sos-dialog" {% if demo == 'sos' %}open style="display:flex;flex-direction:column;position:fixed;inset:0;margin:auto;z-index:99999;border:1px solid #374151;box-shadow:0 25px 50px -12px rgba(0,0,0,0.7);"{% endif %}>
     <div class="dialog-head">
       <div class="sos-dialog-title-wrap">
         <div class="sos-dialog-beacon"><i class="ph-bold ph-first-aid" aria-hidden="true"></i></div>
@@ -4627,7 +4687,25 @@
           }
           body.append(alert);
         }
-        const score = typeof msg.confidence === 'number' && Number.isFinite(msg.confidence) ? Math.max(0, Math.min(1, msg.confidence)) : null; const passed = msg.passed === true; const meta = document.createElement('div'); meta.className = 'message-metadata'; const badge = document.createElement('button'); badge.className = 'confidence ' + (score === null ? 'no-score' : passed ? '' : 'warning'); badge.dataset.testid = id + '-confidence'; badge.title = 'About grounding scores'; badge.innerHTML = icon(score === null ? 'info' : passed ? 'shield-check' : 'warning-circle') + `<span>${score === null ? 'Not evaluated' : passed ? 'Grounding check passed' : 'Low confidence · Refusal gated'}</span>${score !== null ? `<span class="mono">${score.toFixed(2)}</span>` : ''}`; badge.onclick = () => showFeature('confidence'); meta.append(badge); const note = document.createElement('span'); note.className = 'metric-note'; note.dataset.testid = id + '-score-note'; note.textContent = 'Not a measure of clinical accuracy'; meta.append(note); body.append(meta);
+        if (msg.evaluation_kind !== 'extraction') {
+          const score = typeof msg.confidence === 'number' && Number.isFinite(msg.confidence) ? Math.max(0, Math.min(1, msg.confidence)) : null;
+          const passed = msg.passed === true && (msg.checks_ran !== false);
+          const meta = document.createElement('div');
+          meta.className = 'message-metadata';
+          const badge = document.createElement('button');
+          badge.className = 'confidence ' + (score === null ? 'no-score' : passed ? '' : 'warning');
+          badge.dataset.testid = id + '-confidence';
+          badge.title = 'About grounding scores';
+          badge.innerHTML = icon(score === null ? 'info' : passed ? 'shield-check' : 'warning-circle') + `<span>${score === null ? 'Not evaluated' : passed ? 'Grounding check passed' : 'Low confidence · Refusal gated'}</span>${score !== null ? `<span class="mono">${score.toFixed(2)}</span>` : ''}`;
+          badge.onclick = () => showFeature('confidence');
+          meta.append(badge);
+          const note = document.createElement('span');
+          note.className = 'metric-note';
+          note.dataset.testid = id + '-score-note';
+          note.textContent = 'Not a measure of clinical accuracy';
+          meta.append(note);
+          body.append(meta);
+        }
         if (msg.audio_url || msg.audio_path) { const audioSrc = msg.audio_url ? safeUrl(msg.audio_url) : safeUrl(endpoint('/api/audio/' + encodeURIComponent(String(msg.audio_path).split(/[\\/]/).pop())), location.href); if (audioSrc) body.append(buildAudio(audioSrc, id)) }
         if (Array.isArray(msg.sources) && msg.sources.length) { const block = document.createElement('div'); block.className = 'source-block'; block.dataset.testid = id + '-sources'; block.innerHTML = `<div class="source-label">${icon('books')}SOURCES</div><div class="source-items"></div>`; msg.sources.forEach((source, i) => { const info = sourceInfo(source); const el = document.createElement(info.url ? 'a' : 'span'); el.className = 'source-item'; el.dataset.testid = id + '-source-' + i; if (info.url) { el.href = info.url; el.target = '_blank'; el.rel = 'noopener noreferrer' } el.textContent = String(i + 1).padStart(2, '0') + ' · ' + info.label; if (info.url) el.insertAdjacentHTML('beforeend', icon('arrow-up-right')); block.lastElementChild.append(el) }); body.append(block) } item.append(body);
         const actions = document.createElement('div'); actions.className = 'message-actions'; const copy = document.createElement('button'); copy.className = 'message-action'; copy.dataset.testid = id + '-copy'; copy.innerHTML = icon('copy') + 'Copy response'; copy.onclick = () => copyText(msg.content); const details = document.createElement('button'); details.className = 'message-action'; details.dataset.testid = id + '-details'; details.innerHTML = icon('info') + 'About this answer'; details.onclick = () => openDialog('about-dialog'); actions.append(copy, details); item.append(actions); $('messages').append(item)
@@ -4635,7 +4713,7 @@
       function buildAudio(src, id) { const box = document.createElement('div'); box.className = 'audio-player'; box.dataset.testid = id + '-audio-player'; box.innerHTML = `<button class="audio-toggle" aria-label="Play voice response" data-testid="${id}-audio-toggle">${icon('play')}</button><div class="audio-main"><div class="audio-heading"><span>VOICE RESPONSE</span><span class="mono" data-testid="${id}-audio-time">0:00 / 0:00</span></div><input class="audio-seek" type="range" min="0" max="100" value="0" step="0.1" aria-label="Seek voice response" data-testid="${id}-audio-seek"></div><button class="audio-speed mono" aria-label="Playback speed 1 times" title="Change playback speed" data-testid="${id}-audio-speed">1×</button>`; const audio = new Audio(src); audio.preload = 'metadata'; audioPlayers.add(audio); const toggle = box.querySelector('.audio-toggle'), seek = box.querySelector('.audio-seek'), time = box.querySelector('.audio-heading .mono'), speed = box.querySelector('.audio-speed'); const fmt = s => Number.isFinite(s) ? Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0') : '0:00'; const sync = () => { time.textContent = fmt(audio.currentTime) + ' / ' + fmt(audio.duration); seek.value = Number.isFinite(audio.duration) && audio.duration ? audio.currentTime / audio.duration * 100 : 0 }; toggle.onclick = async () => { if (audio.paused) { if (playingAudio && playingAudio !== audio) playingAudio.pause(); playingAudio = audio; try { await audio.play() } catch { toast('This voice response could not be played.', true) } } else audio.pause() }; audio.onplay = () => { toggle.innerHTML = icon('pause'); toggle.setAttribute('aria-label', 'Pause voice response') }; audio.onpause = () => { toggle.innerHTML = icon('play'); toggle.setAttribute('aria-label', 'Play voice response') }; audio.onended = () => { audio.currentTime = 0; sync() }; audio.ontimeupdate = sync; audio.onloadedmetadata = sync; audio.onerror = () => { time.textContent = 'Audio unavailable'; toggle.disabled = true; seek.disabled = true; speed.disabled = true }; seek.oninput = () => { if (Number.isFinite(audio.duration) && audio.duration > 0) audio.currentTime = Number(seek.value) / 100 * audio.duration }; speed.onclick = () => { const rates = [1, 1.25, 1.5, 2, .75]; audio.playbackRate = rates[(rates.indexOf(audio.playbackRate) + 1) % rates.length]; speed.textContent = audio.playbackRate + '×'; speed.setAttribute('aria-label', 'Playback speed ' + audio.playbackRate + ' times') }; return box }
       function renderError(text, retry, label = 'Try again') { const node = document.createElement('div'); node.className = 'error-card'; node.dataset.testid = 'request-error-' + uid(''); node.setAttribute('role', 'alert'); node.innerHTML = `<strong>A small pause in the conversation.</strong><br>${esc(text)}<button class="retry-button" data-testid="retry-request-button">${icon('arrow-clockwise')}${esc(label)}</button>`; node.querySelector('button').onclick = () => { node.remove(); retry() }; $('messages').append(node); return node }
       function showLoader() { const node = document.createElement('div'); node.id = 'response-loader'; node.className = 'loading-card'; node.dataset.testid = 'response-loading'; node.innerHTML = '<span class="loading-dots" aria-hidden="true"><span></span><span></span><span></span></span><div><span data-testid="loading-stage">Looking for a grounded answer…</span><span class="loading-sub">Medical knowledge · Source evaluation · Response</span></div>'; $('messages').append(node) }
-      async function submitQuestion(question, retry = false) { question = String(question || '').trim(); if (busy || !question) return; if (question.length > 5000) { toast('Please keep your question under 5,000 characters.', true); return } activeController?.abort(); const controller = new AbortController(); activeController = controller; const epoch = ++requestEpoch; const currentSession = sessionId; lastQuestion = question; setBusy(true); showConversation(true); $('messages').querySelectorAll('.error-card').forEach(el => el.remove()); $('query-input').value = ''; resizeInput(); if (!retry) { const message = { role: 'user', content: question, timestamp: new Date().toISOString() }; messages.push(message); renderMessage(message) } showLoader(); scrollBottom(); try { const data = await request('/api/query', { method: 'POST', data: { user_id: userId, session_id: currentSession, question }, signal: controller.signal, timeout: 120000 }); if (epoch !== requestEpoch || currentSession !== sessionId) return; if (typeof data?.answer !== 'string' || !data.answer.trim()) throw new Error('The server did not return an answer.'); $('response-loader')?.remove(); const answer = { role: 'assistant', content: data.answer, confidence: data.confidence, passed: data.passed, audio_url: data.audio_url, audio_path: data.audio_path, sources: data.sources, is_concerning: data.is_concerning, disclaimer: data.disclaimer, timestamp: new Date().toISOString() }; messages.push(answer); renderMessage(answer); lastQuestion = ''; setConnection('online'); loadHistory() } catch (error) { if (epoch !== requestEpoch || cancelError(error)) return; $('response-loader')?.remove(); setConnection('offline'); const detail = error?.response?.status === 429 ? 'The server is busy. Please wait a moment and try again.' : 'ClinIQ could not reach a medical answer. Check your server connection, then try again. No answer has been generated.'; renderError(detail, () => submitQuestion(question, true)); toast('Unable to reach your ClinIQ server.', true) } finally { if (epoch === requestEpoch) { setBusy(false); scrollBottom(); if (window.innerWidth >= 768) $('query-input').focus({ preventScroll: true }) } } }
+      async function submitQuestion(question, retry = false) { question = String(question || '').trim(); if (busy || !question) return; if (question.length > 5000) { toast('Please keep your question under 5,000 characters.', true); return } activeController?.abort(); const controller = new AbortController(); activeController = controller; const epoch = ++requestEpoch; const currentSession = sessionId; lastQuestion = question; setBusy(true); showConversation(true); $('messages').querySelectorAll('.error-card').forEach(el => el.remove()); $('query-input').value = ''; resizeInput(); if (!retry) { const message = { role: 'user', content: question, timestamp: new Date().toISOString() }; messages.push(message); renderMessage(message) } showLoader(); scrollBottom(); try { const data = await request('/api/query', { method: 'POST', data: { user_id: userId, session_id: currentSession, question }, signal: controller.signal, timeout: 120000 }); if (epoch !== requestEpoch || currentSession !== sessionId) return; if (typeof data?.answer !== 'string' || !data.answer.trim()) throw new Error('The server did not return an answer.'); $('response-loader')?.remove(); const answer = { role: 'assistant', content: data.answer, confidence: data.confidence, passed: (data.passed === true && data.checks_ran === true), checks_ran: data.checks_ran, evaluation_kind: 'grounding', audio_url: data.audio_url, audio_path: data.audio_path, sources: data.sources, is_concerning: data.is_concerning, disclaimer: data.disclaimer, timestamp: new Date().toISOString() }; messages.push(answer); renderMessage(answer); lastQuestion = ''; setConnection('online'); loadHistory() } catch (error) { if (epoch !== requestEpoch || cancelError(error)) return; $('response-loader')?.remove(); setConnection('offline'); const detail = error?.response?.status === 429 ? 'The server is busy. Please wait a moment and try again.' : 'ClinIQ could not reach a medical answer. Check your server connection, then try again. No answer has been generated.'; renderError(detail, () => submitQuestion(question, true)); toast('Unable to reach your ClinIQ server.', true) } finally { if (epoch === requestEpoch) { setBusy(false); scrollBottom(); if (window.innerWidth >= 768) $('query-input').focus({ preventScroll: true }) } } }
       async function handleReportUpload(file) {
         if (!file) return;
         if (busy) { toast('Please wait for the current request to complete.', true); return }
@@ -4726,13 +4804,19 @@
           }
           const sources = Array.from(srcMap.entries()).map(([label, url]) => ({ title: label, url: url || null }));
 
+          const isCritical = Boolean(data.has_critical_findings || data.overall_label === 'see a doctor soon');
+          const isLowConf = data.overall_label === 'low confidence - please verify';
+          const evalKind = isCritical ? 'critical' : 'extraction';
+
           const assistantMsg = {
             role: 'assistant',
             content: content,
-            confidence: data.overall_confidence,
-            passed: data.overall_label !== 'low confidence - please verify',
+            confidence: isCritical ? null : data.overall_confidence,
+            passed: !isCritical && !isLowConf,
+            checks_ran: true,
+            evaluation_kind: evalKind,
             sources: sources,
-            is_concerning: data.has_critical_findings,
+            is_concerning: isCritical,
             disclaimer: data.disclaimer,
             timestamp: new Date().toISOString()
           };
@@ -4842,7 +4926,20 @@
       $('reading-size').onchange = e => { document.documentElement.style.setProperty('--body-size', e.target.value + 'px'); storage.set('readingSize', e.target.value); toast('Reading size updated.') }; const readSize = storage.get('readingSize'); if (['14', '16', '18'].includes(readSize)) { $('reading-size').value = readSize; document.documentElement.style.setProperty('--body-size', readSize + 'px') }
       const motionSetting = storage.get('reduceMotion'); setMotion(motionSetting === null ? window.matchMedia('(prefers-reduced-motion: reduce)').matches : motionSetting === 'true'); $('motion-toggle').onclick = () => setMotion(!reducedMotion);
       window.addEventListener('keydown', e => { if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); if (!document.querySelector('dialog[open]')) newConversation() } if (e.key === 'Escape') closeSidebar(); if (e.key === 'Tab' && window.innerWidth < 768 && $('sidebar').classList.contains('open')) { const focusable = [...$('sidebar').querySelectorAll('button,a,input')].filter(el => !el.disabled && el.offsetParent !== null); const first = focusable[0], last = focusable.at(-1); if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus() } else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus() } } }); window.addEventListener('resize', syncSidebar);
-      syncContext(); syncSidebar(); resizeInput(); initSwiper(); initKnowledgeMesh(); stampTestIds(); new MutationObserver(records => records.forEach(record => record.addedNodes.forEach(node => { if (node.nodeType === 1) stampTestIds(node.parentElement || document) }))).observe(document.body, { childList: true, subtree: true }); loadHistory(); loadMessages();
+      syncContext(); syncSidebar(); resizeInput(); initSwiper(); initKnowledgeMesh(); stampTestIds(); new MutationObserver(records => records.forEach(record => record.addedNodes.forEach(node => { if (node.nodeType === 1) stampTestIds(node.parentElement || document) }))).observe(document.body, { childList: true, subtree: true });
+
+      // Demo parameter handling for portfolio screenshots and walkthrough captures
+      const demoMode = "{{ demo or '' }}" || params.get('demo');
+      if (demoMode === 'sos') {
+        $('sos-dialog')?.showModal();
+      } else if (demoMode === 'chat' || demoMode === 'report') {
+        $('welcome').hidden = true;
+        $('conversation').hidden = false;
+        scrollBottom(false);
+      } else {
+        loadHistory();
+        loadMessages();
+      }
     });
   </script>
 </body>

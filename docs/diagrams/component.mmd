@@ -1,0 +1,52 @@
+flowchart TB
+    %% UML Component Diagram for ClinIQ
+    classDef compStyle fill:#FFFFFF,stroke:#0F172A,stroke-width:2px,color:#0F172A,font-weight:bold;
+    classDef intfStyle fill:#F8FAFC,stroke:#0284C7,stroke-width:1.5px,color:#0369A1;
+
+    subgraph Presentation["Presentation Layer [Component]"]
+        UI["Web Single-Page UI (HTML5 / TailwindCSS / Three.js)"]:::compStyle
+        AudioPlayer["Spoken Audio Streaming Module"]:::compStyle
+        LabRenderer["Clinical Report Visualizer"]:::compStyle
+    end
+
+    subgraph Controller["Application Controller [Component]"]
+        FlaskServer["Flask WSGI Application Controller (app.py)"]:::compStyle
+        Limiter["Sliding Window Rate Limiter"]:::compStyle
+        KeyRotator["API Key Rotation Manager"]:::compStyle
+    end
+
+    subgraph RetrievalGeneration["Retrieval & Generation Subsystem [Component]"]
+        PipelineCore["Clinical Orchestration Pipeline (pipeline.py)"]:::compStyle
+        DenseRetriever["Dense Vector & Hybrid Retriever (retriever.py)"]:::compStyle
+        ChromaStore[("ChromaDB Vector Store")]:::compStyle
+        LLMGenerator["llama-3.1-8b-instant Generator (generator.py)"]:::compStyle
+    end
+
+    subgraph EvaluationPersistence["Evaluation & Persistence Subsystem [Component]"]
+        TwoPassEvaluator["Two-Pass Gating Evaluator (evaluator.py)"]:::compStyle
+        SessionMemory["Conversation SQLite Memory (memory.py)"]:::compStyle
+        TTSGateway["Google Cloud TTS Gateway (tts.py)"]:::compStyle
+    end
+
+    subgraph ReportAnalyzerPkg["Report Analyzer Engine [Component]"]
+        AnalyzerCore["Report Orchestration Facade (analyzer.py)"]:::compStyle
+        OCRParser["Extractor & Regex Structurer"]:::compStyle
+        RangeComparator["Pure-Python Range Comparator"]:::compStyle
+        DrugVerifier["WHO/FDA Drug Verifier"]:::compStyle
+    end
+
+    %% Interfaces and Connections
+    UI -->|REST / JSON API| FlaskServer
+    FlaskServer -->|Internal Call| PipelineCore
+    FlaskServer -->|Multi-Part Upload| AnalyzerCore
+
+    PipelineCore -->|Retrieve Chunks| DenseRetriever
+    DenseRetriever -->|HNSW Vector Query| ChromaStore
+    PipelineCore -->|Construct Prompt| LLMGenerator
+    PipelineCore -->|Audit Quality| TwoPassEvaluator
+    PipelineCore -->|Store Context| SessionMemory
+    PipelineCore -->|Voice Request| TTSGateway
+
+    AnalyzerCore -->|Extract Tokens| OCRParser
+    AnalyzerCore -->|Verify Markers| RangeComparator
+    AnalyzerCore -->|Cross-Reference Rx| DrugVerifier

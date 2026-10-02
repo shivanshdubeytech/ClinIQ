@@ -64,8 +64,9 @@ class TestClinIQIntegration(unittest.TestCase):
 
     def test_04_sessions_and_messages(self):
         """Verifies session creation, session listing, and session message retrieval."""
-        test_user = "unit_user_test_42"
-        test_session = "unit_sess_test_42"
+        import uuid
+        test_user = f"test_user_{uuid.uuid4().hex[:8]}"
+        test_session = f"sess_integration_{uuid.uuid4().hex[:8]}"
 
         create_session(user_id=test_user, session_id=test_session, title="Test Session Diabetes")
         save_interaction(

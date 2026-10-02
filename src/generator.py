@@ -14,7 +14,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from config import GROQ_API_KEY, KEY_ROTATION_MANAGER, LLM_MODEL_NAME, rotate_groq_api_key, setup_logger
+from config import LLM_MODEL_NAME, get_all_groq_api_keys, rotate_groq_api_key, setup_logger
 
 logger = setup_logger("generator")
 
@@ -96,7 +96,7 @@ def generate_answer(
     models_to_try = [m for m in candidate_models if not (m in seen or seen.add(m))]
 
     last_err = None
-    keys_to_try = KEY_ROTATION_MANAGER.get_all_keys()
+    keys_to_try = get_all_groq_api_keys()
 
     for api_key in keys_to_try:
         client = Groq(api_key=api_key)
@@ -122,7 +122,8 @@ def generate_answer(
                 except Exception as err:
                     last_err = err
                     err_str = str(err).lower()
-                    logger.warning(f"Generator model '{model}' with max_tokens={token_limit} failed on key: {err}.")
+                    logger.warning(f"Generator model '{model}' with max_tokens={token_limit} failed on key: {type(err).__name__}")
+                    logger.debug(f"Generator error details: {err}")
                     if "expected output tokens exceed" in err_str or "reduce max_tokens" in err_str:
                         continue  # retry with lower token_limit
                     if "rate_limit" in err_str or "429" in err_str or "401" in err_str or "invalid_api_key" in err_str:
@@ -130,7 +131,7 @@ def generate_answer(
                         break  # Try next key
                     break  # Try next model
 
-    return f"[GENERATION ERROR] Unable to generate answer due to API error: {last_err}"
+    return f"[GENERATION ERROR] Unable to generate answer due to API error: {type(last_err).__name__ if last_err else 'Unknown'}"
 
 
 if __name__ == "__main__":

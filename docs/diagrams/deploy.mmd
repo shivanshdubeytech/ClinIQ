@@ -1,0 +1,36 @@
+flowchart LR
+    %% UML Deployment Diagram for ClinIQ
+    classDef nodeStyle fill:#FFFFFF,stroke:#0F172A,stroke-width:2px,color:#0F172A,font-weight:bold;
+    classDef artStyle fill:#F8FAFC,stroke:#475569,stroke-width:1.5px,color:#1E293B;
+
+    subgraph ClientNode["«device» Client Workstation / Mobile"]
+        subgraph BrowserEnv["«execution environment» Modern Web Browser"]
+            SPA["«artifact» Single Page Application\nHTML5, JS, CSS, Audio API"]:::artStyle
+        end
+    end
+
+    subgraph ServerNode["«device» ClinIQ Application Server (Linux / Windows)"]
+        subgraph OS["«execution environment» Python 3.11 Runtime / Gunicorn WSGI"]
+            FlaskProc["«execution environment» Flask Web Application\n(Port 8501)"]:::artStyle
+            LocalModel["«artifact» sentence-transformers\nall-MiniLM-L6-v2 (Local Embeddings)"]:::artStyle
+            ChromaDB["«artifact» ChromaDB Local Store\n(/chroma_db persistence)"]:::artStyle
+            SQLiteDB["«artifact» cliniq.db\n(SQLite Conversation Store)"]:::artStyle
+        end
+    end
+
+    subgraph CloudGateways["«cloud» External AI Infrastructure Gateways"]
+        subgraph GroqCloud["«execution environment» Groq Cloud Platform"]
+            LLMCluster["llama-3.1-8b-instant\nLPUs (Language Processing Units)"]:::artStyle
+        end
+        subgraph GoogleCloud["«execution environment» Google Cloud Platform"]
+            TTSCluster["Cloud Text-to-Speech API\nNeural Voice Synthesis"]:::artStyle
+        end
+    end
+
+    %% Communication Connectors and Protocols
+    SPA <==>|HTTPS / TLS 1.3\nPort 8501| FlaskProc
+    FlaskProc <==>|Internal Memory Bus| LocalModel
+    FlaskProc <==>|Loopback File I/O\nSQLite Driver| SQLiteDB
+    FlaskProc <==>|Local IPC / Python API| ChromaDB
+    FlaskProc <==>|HTTPS / TLS 1.3 REST API\nPort 443| LLMCluster
+    FlaskProc <==>|HTTPS / TLS 1.3 REST API\nPort 443| TTSCluster

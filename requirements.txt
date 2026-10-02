@@ -16,3 +16,11 @@ python-dotenv==1.0.1
 
 # Google Text-to-Speech engine for audio responses
 gTTS==2.5.4
+
+# Development & test dependencies moved to requirements-dev.txt
+
+# Document parsing and image handling (used by src/report_analyzer/)
+pypdf>=4.0.0
+Pillow>=11.0.0
+pytesseract>=0.3.10
+pdf2image>=1.17.0

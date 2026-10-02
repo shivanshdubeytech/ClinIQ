@@ -6,6 +6,7 @@ Supports text truncation to optimize API latency and includes error handling for
 
 import os
 import sys
+import time
 from pathlib import Path
 from typing import Optional
 
@@ -19,9 +20,45 @@ if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
 from gtts import gTTS
-from config import setup_logger
+from config import AUDIO_DIR, setup_logger
 
 logger = setup_logger("tts")
+
+MAX_AUDIO_FILES = 500
+MAX_AUDIO_AGE_SECONDS = 24 * 60 * 60
+
+
+def prune_audio_dir(audio_dir: Path) -> int:
+    """Removes audio files older than MAX_AUDIO_AGE_SECONDS, then trims the
+    oldest files if the count still exceeds MAX_AUDIO_FILES. Returns the
+    number of files removed."""
+    if not audio_dir.exists():
+        return 0
+    now = time.time()
+    removed = 0
+    entries = []
+    for p in audio_dir.glob("audio_*.mp3"):
+        try:
+            st = p.stat()
+        except OSError:
+            continue
+        if now - st.st_mtime > MAX_AUDIO_AGE_SECONDS:
+            try:
+                p.unlink()
+                removed += 1
+            except OSError:
+                pass
+        else:
+            entries.append((st.st_mtime, p))
+    if len(entries) > MAX_AUDIO_FILES:
+        entries.sort()
+        for _, p in entries[: len(entries) - MAX_AUDIO_FILES]:
+            try:
+                p.unlink()
+                removed += 1
+            except OSError:
+                pass
+    return removed
 
 
 def synthesize(text: Optional[str], output_path: str = "output_audio.mp3", lang: str = "en") -> Optional[str]:
@@ -35,6 +72,11 @@ def synthesize(text: Optional[str], output_path: str = "output_audio.mp3", lang:
     Returns:
         Optional[str]: Absolute file path of saved MP3 audio if successful, or None on failure/empty text.
     """
+    try:
+        prune_audio_dir(AUDIO_DIR)
+    except Exception:
+        pass
+
     if not text or not text.strip():
         print("[TTS WARNING] Provided text is empty or None. Skipping synthesis.")
         return None

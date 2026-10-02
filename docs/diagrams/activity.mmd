@@ -1,0 +1,50 @@
+flowchart LR
+    %% UML Activity Diagram with Three Parallel Swimlanes (Landscape Layout)
+    classDef startEnd fill:#0F172A,stroke:#0F172A,color:#FFFFFF;
+    classDef activity fill:#FFFFFF,stroke:#0F172A,stroke-width:1.5px,color:#0F172A;
+    classDef decision fill:#FEF3C7,stroke:#D97706,stroke-width:1.5px,color:#92400E;
+
+    subgraph Lane1["Client Browser"]
+        A_Start((Start)):::startEnd
+        A_Input["User Submits Query via UI"]:::activity
+        A_Render["Render Grounded Answer & Waveform"]:::activity
+        A_End((End)):::startEnd
+    end
+
+    subgraph Lane2["Flask Controller"]
+        B_Val{"Valid Payload?"}:::decision
+        B_Rate{"Rate Limit?"}:::decision
+        B_Dispatch["Dispatch to Pipeline"]:::activity
+        B_Resp["Serialize JSON HTTP 200"]:::activity
+    end
+
+    subgraph Lane3["Processing Engines"]
+        C_Guard{"Emergency / Creator?"}:::decision
+        C_Embed["MiniLM Embedding & ChromaDB Top-4"]:::activity
+        C_Rerank["Lexical Rerank & LLaMA-3.3 Prompt"]:::activity
+        C_Inference["Groq Inference & Two-Pass NLI Check"]:::activity
+        C_Gate{"Confidence >= 0.70?"}:::decision
+        C_Pass["Passed Grounded Output"]:::activity
+        C_Fail["Safe Refusal Output"]:::activity
+        C_Mem["SQLite Memory & Optional TTS"]:::activity
+    end
+
+    A_Start --> A_Input
+    A_Input --> B_Val
+    B_Val -- Yes --> B_Rate
+    B_Val -- No --> B_Resp
+    B_Rate -- Allowed --> B_Dispatch
+    B_Rate -- Exceeded --> B_Resp
+    B_Dispatch --> C_Guard
+    C_Guard -- Red Flag --> C_Fail
+    C_Guard -- Standard --> C_Embed
+    C_Embed --> C_Rerank
+    C_Rerank --> C_Inference
+    C_Inference --> C_Gate
+    C_Gate -- Pass --> C_Pass
+    C_Gate -- Fail --> C_Fail
+    C_Pass --> C_Mem
+    C_Fail --> C_Mem
+    C_Mem --> B_Resp
+    B_Resp --> A_Render
+    A_Render --> A_End

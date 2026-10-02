@@ -1,6 +1,17 @@
 # Environment & Secret Files
 .env
+.env.*
+!.env.example
 *.env.local
+
+# Databases & Vector Stores
+*.db
+*.db-wal
+*.db-shm
+chroma_db/
+
+# Ephemeral Audio & Uploads
+static/audio/
 
 # Virtual Environments
 venv/
@@ -15,11 +26,16 @@ __pycache__/
 *.pyd
 .pytest_cache/
 
-# Database & Vector Store Artifacts
-cliniq.db
-
-# Generated Media & Scratch Files
+# Scratch & Temporary Files
 scratch/
+*.docx
+*.pdf
+*.zip
+~$*
+plagiarism_chunks.md
+cliniq_report.md
+linkedin_post.md
+scripts/
 
 # Operating System & IDE Files
 .DS_Store

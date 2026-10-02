@@ -1,0 +1,48 @@
+flowchart LR
+    %% UML Use Case Diagram for ClinIQ (Landscape Layout)
+    classDef actorStyle fill:#F8FAFC,stroke:#0F172A,stroke-width:2px,color:#0F172A,font-weight:bold;
+    classDef ucStyle fill:#FFFFFF,stroke:#0284C7,stroke-width:1.5px,color:#0F172A;
+    classDef extStyle fill:#F1F5F9,stroke:#64748B,stroke-width:2px,stroke-dasharray: 4 4,color:#0F172A;
+
+    subgraph PrimaryActors["Primary Actors"]
+        Patient["fa:fa-user Patient / User"]:::actorStyle
+        Admin["fa:fa-user-shield System Administrator"]:::actorStyle
+    end
+
+    subgraph CoreUseCases["ClinIQ Core Capabilities"]
+        UC01(["UC-01: Submit Question"]):::ucStyle
+        UC02(["UC-02: View Citations"]):::ucStyle
+        UC03(["UC-03: Play Voice Response"]):::ucStyle
+        UC04(["UC-04: Upload Report"]):::ucStyle
+        UC05(["UC-05: Review Biomarkers"]):::ucStyle
+        UC06(["UC-06: Panic Alerts"]):::ucStyle
+    end
+
+    subgraph ExtendedUseCases["Operational Workflows"]
+        UC07(["UC-07: Drug Verification"]):::ucStyle
+        UC08(["UC-08: Emergency SOS"]):::ucStyle
+        UC09(["UC-09: Switch History"]):::ucStyle
+        UC10(["UC-10: Toggle Theme"]):::ucStyle
+        UC11(["UC-11: System Health"]):::ucStyle
+    end
+
+    subgraph CloudGateways["External Gateways"]
+        GroqAPI["Groq API (llama-3.1-8b-instant)"]:::extStyle
+        GoogleTTS["Google TTS API"]:::extStyle
+    end
+
+    Patient --> UC01
+    Patient --> UC02
+    Patient --> UC03
+    Patient --> UC04
+    Patient --> UC05
+    Patient --> UC06
+    Patient --> UC07
+    Patient --> UC08
+    Patient --> UC09
+    Patient --> UC10
+
+    Admin --> UC11
+
+    UC01 -.->|&lt;&lt;include&gt;&gt;| GroqAPI
+    UC03 -.->|&lt;&lt;include&gt;&gt;| GoogleTTS

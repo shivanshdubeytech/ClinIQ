@@ -1,0 +1,114 @@
+classDiagram
+    direction TB
+
+    class SystemConfig {
+        +str GROQ_API_KEYS
+        +str CHROMA_DIR
+        +str EMBED_MODEL
+        +float CONFIDENCE_THRESHOLD
+        +int RATE_LIMIT_REQUESTS
+        +int RATE_LIMIT_WINDOW
+        +validate() bool
+    }
+
+    class KeyRotationManager {
+        -list keys
+        -int current_index
+        +get_next_key() str
+        +mark_rate_limited(key) void
+    }
+
+    class SlidingWindowLimiter {
+        -dict client_records
+        -int max_requests
+        -int window_seconds
+        +is_allowed(client_ip) bool
+        -cleanup_expired() void
+    }
+
+    class FlaskApp {
+        +Flask app
+        +SlidingWindowLimiter limiter
+        +Pipeline pipeline
+        +ReportAnalyzer analyzer
+        +query_endpoint() json
+        +analyze_report_endpoint() json
+        +audio_endpoint() stream
+        +health_endpoint() json
+    }
+
+    class Pipeline {
+        -Retriever retriever
+        -Generator generator
+        -Evaluator evaluator
+        -Memory memory
+        -TTS tts
+        +handle_query(query, session_id, voice) dict
+        -check_concerning_query(query) dict
+        -check_creator_query(query) dict
+    }
+
+    class Retriever {
+        -SentenceTransformer embedder
+        -ChromaClient client
+        -Collection collection
+        +retrieve(query, top_k) list
+        +keyword_filter(query) list
+        +hybrid_rerank(semantic_results, keyword_results) list
+    }
+
+    class Generator {
+        -KeyRotationManager key_manager
+        +build_prompt(query, context, history) str
+        +generate_answer(prompt) str
+    }
+
+    class Evaluator {
+        -KeyRotationManager key_manager
+        +evaluate_faithfulness(answer, context) float
+        +evaluate_relevance(answer, query) float
+        +compute_confidence(faithfulness, relevance) float
+        +evaluate_and_respond(query, context, raw_answer) dict
+    }
+
+    class Memory {
+        -Connection db_conn
+        +get_history(session_id) list
+        +save_interaction(session_id, role, content, confidence) void
+        +clear_session(session_id) void
+    }
+
+    class TTS {
+        -str voice_gender
+        -str language_code
+        +synthesize_speech(text) bytes
+    }
+
+    class ReportAnalyzer {
+        -Extractor extractor
+        -Structurer structurer
+        -Comparator comparator
+        -DrugVerifier drug_verifier
+        -Explainer explainer
+        +analyze(file_stream, filename) dict
+        -run_seven_stages(raw_text) dict
+    }
+
+    %% Relationships
+    SystemConfig <.. KeyRotationManager : configures
+    SystemConfig <.. SlidingWindowLimiter : configures
+
+    FlaskApp *-- "1" SlidingWindowLimiter : contains
+    FlaskApp *-- "1" Pipeline : contains
+    FlaskApp *-- "1" ReportAnalyzer : contains
+
+    Pipeline *-- "1" Retriever : composes
+    Pipeline *-- "1" Generator : composes
+    Pipeline *-- "1" Evaluator : composes
+    Pipeline *-- "1" Memory : composes
+    Pipeline *-- "1" TTS : composes
+
+    Generator --> "1" KeyRotationManager : invokes
+    Evaluator --> "1" KeyRotationManager : invokes
+    Pipeline ..> Memory : persists history
+    Retriever ..> SystemConfig : reads settings

@@ -4,10 +4,47 @@ Evaluates lab test values against reference ranges strictly using deterministic 
 Language models are NEVER used to evaluate low/normal/high classifications or clinical ranges.
 """
 
+import re
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
 
 from .structurer import LabTestItem, StructuredDocument
+
+
+def _normalize_unit(unit: str) -> str:
+    """Normalizes unit strings for robust comparison."""
+    if not unit:
+        return ""
+    u = unit.strip().lower()
+    u = re.sub(r"\s+", "", u)
+    u = u.replace("micro", "u").replace("μ", "u")
+    u = u.replace("10^3/ul", "x10^3/ul").replace("10*3/ul", "x10^3/ul").replace("k/ul", "x10^3/ul")
+    u = u.replace("10^3/mm3", "x10^3/ul").replace("cells/mc", "x10^3/ul")
+    return u
+
+
+_UNIT_EQUIVALENCE = {
+    "mg/dl": {"mg/dl", "mg/100ml", "mg%"},
+    "g/dl": {"g/dl", "gm/dl", "gm%", "g%"},
+    "x10^3/ul": {"x10^3/ul", "10^3/ul", "k/ul", "thou/ul", "/ul", "cells/ul", "cumm", "cells/cumm", "x10^3/mm3", "10^3/mm3"},
+    "meq/l": {"meq/l", "mmol/l"},
+    "%": {"%"},
+    "uiu/ml": {"uiu/ml", "miu/l", "uunit/ml", "uunits/ml", "uu/ml", "miu/ml"},
+}
+
+
+def _units_compatible(unit_a: str, unit_b: str) -> bool:
+    """Checks if two units are clinically compatible for numerical comparison."""
+    if not unit_a or not unit_b:
+        return False
+    na = _normalize_unit(unit_a)
+    nb = _normalize_unit(unit_b)
+    if na == nb:
+        return True
+    for eq_set in _UNIT_EQUIVALENCE.values():
+        if na in eq_set and nb in eq_set:
+            return True
+    return False
 
 
 # Standard Clinical Reference Guidelines (Used ONLY when an uploaded report does not specify ranges)
@@ -167,17 +204,34 @@ def evaluate_lab_item(item: LabTestItem) -> EvaluatedLabTest:
 
     matched_spec = _match_standard_range(item.test_name)
 
-    # If report lacks range, fall back to standard clinical guidelines if matched
+    # Unit compatibility check against standard reference guidelines
+    unit_compatible_with_standard = False
+    if matched_spec and item.unit:
+        unit_compatible_with_standard = _units_compatible(item.unit, matched_spec.get("unit", ""))
+
+    # If report lacks range, fall back to standard clinical guidelines if matched and units are compatible
+    unit_mismatch_fallback = False
     if low is None and high is None and matched_spec:
-        low = matched_spec["low"]
-        high = matched_spec["high"]
-        source = "standard_guidelines"
+        if unit_compatible_with_standard:
+            low = matched_spec["low"]
+            high = matched_spec["high"]
+            source = "standard_guidelines"
+        else:
+            unit_mismatch_fallback = True
+            source = "unverified_unit"
 
     status = "UNKNOWN_RANGE"
     interpretation = ""
 
+    if unit_mismatch_fallback:
+        status = "UNVERIFIED_UNIT"
+        expected_unit = matched_spec.get("unit", "")
+        interpretation = (
+            f"{item.test_name} value ({val} {item.unit}) could not be verified against standard reference range "
+            f"({expected_unit}). Reference ranges vary by unit system. Consult your physician."
+        )
     # Pure Python comparison logic
-    if low is not None and high is not None:
+    elif low is not None and high is not None:
         if val < low:
             status = "LOW"
             interpretation = (
@@ -227,23 +281,24 @@ def evaluate_lab_item(item: LabTestItem) -> EvaluatedLabTest:
         interpretation = f"{item.test_name} is {val} {item.unit}. No reference range available."
 
     # Critical panic value detection (deterministic check)
+    # Never apply standard panic thresholds if units are incompatible or unverified
     is_critical = False
     critical_alert = None
 
-    if matched_spec:
+    if matched_spec and unit_compatible_with_standard and status != "UNVERIFIED_UNIT":
         crit_low = matched_spec.get("critical_low")
         crit_high = matched_spec.get("critical_high")
         if crit_low is not None and val <= crit_low:
             is_critical = True
             critical_alert = (
                 f"CRITICAL VALUE: {item.test_name} ({val} {item.unit}) is dangerously low "
-                f"(critical threshold <= {crit_low}). Immediate medical evaluation recommended."
+                f"(critical threshold <= {crit_low} {matched_spec.get('unit', '')}). Immediate medical evaluation recommended."
             )
         elif crit_high is not None and val >= crit_high:
             is_critical = True
             critical_alert = (
                 f"CRITICAL VALUE: {item.test_name} ({val} {item.unit}) is dangerously high "
-                f"(critical threshold >= {crit_high}). Immediate medical evaluation recommended."
+                f"(critical threshold >= {crit_high} {matched_spec.get('unit', '')}). Immediate medical evaluation recommended."
             )
 
     return EvaluatedLabTest(

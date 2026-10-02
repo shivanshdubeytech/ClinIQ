@@ -52,10 +52,18 @@ PdfReader = None
 _ensure_pdf_reader()
 
 try:
-    from PIL import Image, ImageStat
+    from PIL import Image, ImageFile, ImageStat
+    from PIL.Image import DecompressionBombError
+    # Cap maximum image pixels to 50 million to prevent decompression bombs / OOM crashes
+    Image.MAX_IMAGE_PIXELS = 50_000_000
+    ImageFile.LOAD_TRUNCATED_IMAGES = False
 except ImportError:
     Image = None
+    ImageFile = None
     ImageStat = None
+    DecompressionBombError = Exception
+
+MAX_UPLOAD_BYTES = 20 * 1024 * 1024  # 20 MB ceiling for medical documents
 
 
 
@@ -149,17 +157,24 @@ def assess_image_quality(image_input: Union[Path, str, io.BytesIO, "Image.Image"
         elif mean_brightness > 245:
             notes.append("Image is overexposed or nearly blank.")
 
-        # Estimate sharpness via simple high-pass/difference approximation
-        pixels = list(gray.getdata())
-        pixel_count = len(pixels)
+        # Estimate sharpness via bounded strided point-sampling (O(1) memory, avoids large pixel list allocation)
+        pixel_count = width * height
         if pixel_count > 1000:
-            # Sample step differences
+            sample_target = min(5000, pixel_count)
+            step_x = max(1, width // int(math.isqrt(sample_target) or 1))
+            step_y = max(1, height // int(math.isqrt(sample_target) or 1))
             diff_sum = 0
-            sample_step = max(1, pixel_count // 5000)
             sample_count = 0
-            for i in range(0, pixel_count - sample_step, sample_step):
-                diff_sum += abs(pixels[i] - pixels[i + sample_step])
-                sample_count += 1
+            for y in range(0, height - 1, step_y):
+                for x in range(0, width - 1, step_x):
+                    p1 = gray.getpixel((x, y))
+                    p2 = gray.getpixel((x + 1, y))
+                    diff_sum += abs(p1 - p2)
+                    sample_count += 1
+                    if sample_count >= 5000:
+                        break
+                if sample_count >= 5000:
+                    break
             avg_gradient = diff_sum / max(1, sample_count)
             if avg_gradient < 3.0:
                 notes.append(f"Image appears heavily blurred or uniform (gradient: {avg_gradient:.1f}).")
@@ -171,6 +186,8 @@ def assess_image_quality(image_input: Union[Path, str, io.BytesIO, "Image.Image"
 
         return is_low_quality, quality_score, notes
 
+    except DecompressionBombError as dbe:
+        return True, 0.0, [f"Image exceeds maximum allowable pixel dimension (possible decompression bomb): {dbe}"]
     except Exception as err:
         return True, 0.3, [f"Failed to assess image quality: {err}"]
 
@@ -366,6 +383,16 @@ def extract_from_image(image_path: Path) -> ExtractionResult:
             quality_notes=quality_notes,
         )
 
+    except DecompressionBombError as dbe:
+        return ExtractionResult(
+            raw_text="",
+            overall_confidence=0.0,
+            document_type="image",
+            page_count=1,
+            is_blurry_or_low_quality=True,
+            quality_notes=["Image exceeds maximum allowable pixel dimension."],
+            error=f"Image exceeds maximum safe dimensions (decompression bomb protection): {dbe}",
+        )
     except Exception as err:
         return ExtractionResult(
             raw_text="",
@@ -409,6 +436,12 @@ def extract_medical_document(
                 raw_text="",
                 error="Uploaded file is empty (0 bytes).",
                 document_type="empty",
+            )
+        if file_size > MAX_UPLOAD_BYTES:
+            return ExtractionResult(
+                raw_text="",
+                error=f"Uploaded file exceeds maximum allowable size (20 MB). Provided size: {file_size / (1024*1024):.1f} MB.",
+                document_type="invalid",
             )
 
         suffix = path.suffix.lower()

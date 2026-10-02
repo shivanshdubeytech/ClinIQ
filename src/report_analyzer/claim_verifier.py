@@ -64,6 +64,7 @@ class SecondPassVerificationResult:
     has_safety_violations: bool = False
     unsupported_claims: List[str] = field(default_factory=list)
     removed_statements: List[str] = field(default_factory=list)
+    verification_flags: List[str] = field(default_factory=list)
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -75,6 +76,7 @@ class SecondPassVerificationResult:
             "claims_count": len(self.claims),
             "unsupported_claims": self.unsupported_claims,
             "removed_statements": self.removed_statements,
+            "verification_flags": self.verification_flags,
         }
 
 
@@ -105,6 +107,9 @@ def _calculate_claim_support(claim: str, source_text: str) -> Tuple[bool, float,
         "this", "that", "with", "from", "your", "have", "been", "were", "what",
         "which", "there", "their", "about", "according", "these", "those",
         "level", "levels", "range", "measured", "standard", "reference",
+        "within", "limit", "limits", "normal", "status", "value", "values",
+        "also", "than", "more", "less", "such", "other", "into", "only",
+        "some", "most", "over", "under", "both", "each", "when", "where",
     }
     content_words = [w for w in claim_words if w not in common_words]
     if not content_words:
@@ -114,8 +119,8 @@ def _calculate_claim_support(claim: str, source_text: str) -> Tuple[bool, float,
     matched_words = [w for w in content_words if w in source_norm]
     support_ratio = len(matched_words) / len(content_words)
 
-    # Threshold for factual support
-    is_supported = support_ratio >= 0.45
+    # Threshold for factual support (Strict Grounding: 60% content word overlap)
+    is_supported = support_ratio >= 0.60
 
     # Find the most matching sentence in the source for citation evidence
     best_segment = None
@@ -185,12 +190,13 @@ def verify_explanation_second_pass(
             groundedness_ratio=1.0,
             has_unsupported_claims=False,
             has_safety_violations=False,
+            verification_flags=[],
         )
 
     if not source:
         source = retrieve_trusted_source(explanation.item_name)
 
-    # Aggregate source content: trusted literature + verified structured finding + real drug database
+    # Aggregate source content: trusted literature + factual finding metadata + real drug database
     drug_context = ""
     try:
         from .drug_verifier import REAL_DRUG_DATABASE
@@ -201,12 +207,10 @@ def verify_explanation_second_pass(
     except Exception:
         pass
 
-    report_finding_context = (
-        f"{explanation.item_name} {explanation.measured_or_ordered} "
-        "is within below above reference range normal low high limit"
-    )
+    # Strictly factual finding context
+    finding_context = f"{explanation.item_name} {explanation.measured_or_ordered}"
     source_corpus = (
-        f"{report_finding_context} {drug_context} {source.summary_content} {' '.join(source.key_points)}"
+        f"{finding_context} {drug_context} {source.summary_content} {' '.join(source.key_points)}"
         if source else ""
     )
 
@@ -215,6 +219,7 @@ def verify_explanation_second_pass(
     verified_sentences: List[str] = []
     unsupported_claims: List[str] = []
     removed_statements: List[str] = []
+    verification_flags: List[str] = []
 
     has_safety_violations = False
 
@@ -224,22 +229,29 @@ def verify_explanation_second_pass(
 
         if v_claim.violates_safety_rule:
             has_safety_violations = True
-            removed_statements.append(f"{c} (Reason: {v_claim.safety_reason})")
+            msg = f"Safety rule violation dropped: '{c}' ({v_claim.safety_reason})"
+            removed_statements.append(msg)
+            verification_flags.append(msg)
             continue
 
         if v_claim.is_supported:
             verified_sentences.append(c)
         else:
             unsupported_claims.append(c)
-            # Flag unsupported assertion instead of silently presenting it
             verified_sentences.append(f"[⚠️ Unverified Claim Flagged: '{c}']")
+            msg = f"Unsupported claim flagged: '{c}' (overlap {v_claim.confidence:.2f} < 0.60)"
+            removed_statements.append(msg)
+            verification_flags.append(msg)
 
     total_claims = len(evaluated_claims)
     supported_count = sum(1 for c in evaluated_claims if c.is_supported and not c.violates_safety_rule)
     ratio = (supported_count / total_claims) if total_claims > 0 else 1.0
 
-    # Reconstruct sanitized verified text
-    sanitized_text = " ".join(verified_sentences)
+    # Reconstruct sanitized verified text (fall back if all claims were unsupported/dropped)
+    if verified_sentences:
+        sanitized_text = " ".join(verified_sentences)
+    else:
+        sanitized_text = UNSUPPORTED_FALLBACK_TEXT
 
     return SecondPassVerificationResult(
         original_text=explanation.explanation_text,
@@ -250,6 +262,7 @@ def verify_explanation_second_pass(
         has_safety_violations=has_safety_violations,
         unsupported_claims=unsupported_claims,
         removed_statements=removed_statements,
+        verification_flags=verification_flags,
     )
 
 
@@ -258,11 +271,12 @@ def apply_second_pass_verification(
 ) -> ReportExplanationResult:
     """Applies second-pass verification to all explanations in a document result."""
     sanitized_explanations = []
+    all_flags = list(report_result.verification_flags)
 
     for exp in report_result.explanations:
         v_res = verify_explanation_second_pass(exp)
 
-        # Update explanation with verified sanitized text
+        # Update explanation with verified sanitized text and verification flags
         verified_exp = ItemExplanation(
             item_name=exp.item_name,
             item_type=exp.item_type,
@@ -273,12 +287,15 @@ def apply_second_pass_verification(
             is_retrieved=exp.is_retrieved,
             suggested_doctor_questions=exp.suggested_doctor_questions,
             critical_alert=exp.critical_alert,
+            verification_flags=v_res.verification_flags,
         )
         sanitized_explanations.append(verified_exp)
+        all_flags.extend(v_res.verification_flags)
 
     return ReportExplanationResult(
         document_summary=report_result.document_summary,
         explanations=sanitized_explanations,
         unsupported_items=list(report_result.unsupported_items),
         disclaimer=report_result.disclaimer,
+        verification_flags=all_flags,
     )

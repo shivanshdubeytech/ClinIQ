@@ -28,7 +28,7 @@ if hasattr(sys.stdout, "reconfigure"):
 import chromadb
 from sentence_transformers import SentenceTransformer
 
-from config import CHROMA_DB_PATH, EMBEDDING_MODEL_NAME, setup_logger
+from config import CHROMA_DB_PATH, EMBEDDING_MODEL_NAME, redact_for_log, setup_logger
 
 logger = setup_logger("retriever")
 
@@ -68,10 +68,15 @@ MEDICAL_SYNONYMS: Dict[str, List[str]] = {
 
 
 def _get_embedder() -> SentenceTransformer:
-    """Lazy-loads and caches the SentenceTransformer embedding model."""
+    """Lazy-loads and caches the SentenceTransformer embedding model on CPU with bounded threads."""
     global _EMBEDDER
     if _EMBEDDER is None:
-        _EMBEDDER = SentenceTransformer(EMBEDDING_MODEL_NAME)
+        try:
+            import torch
+            torch.set_num_threads(1)
+        except Exception:
+            pass
+        _EMBEDDER = SentenceTransformer(EMBEDDING_MODEL_NAME, device="cpu")
     return _EMBEDDER
 
 
@@ -180,10 +185,22 @@ def retrieve(query: str, k: int = 3, pool_k: int = 20) -> List[Dict[str, Any]]:
         RuntimeError: If database or collection is missing/empty.
     """
     if not os.path.exists(CHROMA_DB_PATH):
-        raise RuntimeError(
-            f"[RETRIEVER ERROR] ChromaDB directory '{CHROMA_DB_PATH}' was not found. "
-            "Please run 'python src/ingest.py' first to build the knowledge base."
-        )
+        bundled_chroma = PROJECT_ROOT / "chroma_db"
+        if bundled_chroma.exists() and str(bundled_chroma) != str(Path(CHROMA_DB_PATH)):
+            import shutil
+            logger.info(f"Populating ChromaDB directory '{CHROMA_DB_PATH}' from bundled knowledge base...")
+            Path(CHROMA_DB_PATH).parent.mkdir(parents=True, exist_ok=True)
+            shutil.copytree(str(bundled_chroma), CHROMA_DB_PATH, dirs_exist_ok=True)
+        else:
+            logger.info(f"ChromaDB directory '{CHROMA_DB_PATH}' not found. Attempting automatic ingestion...")
+            try:
+                from src.ingest import ingest_knowledge_base
+                ingest_knowledge_base()
+            except Exception as e:
+                raise RuntimeError(
+                    f"[RETRIEVER ERROR] ChromaDB directory '{CHROMA_DB_PATH}' was not found and auto-ingest failed: {e}. "
+                    "Please run 'python src/ingest.py' first to build the knowledge base."
+                )
 
     client = chromadb.PersistentClient(path=CHROMA_DB_PATH)
     collections = [c.name for c in client.list_collections()]
@@ -256,8 +273,11 @@ def retrieve(query: str, k: int = 3, pool_k: int = 20) -> List[Dict[str, Any]]:
     candidate_list.sort(key=lambda x: x["similarity_score"], reverse=True)
     top_k_results = candidate_list[:k]
 
-    # Log full retrieval score breakdown
-    logger.info(f"Retrieval Breakdown for Query: '{query}' (Keywords: {query_keywords})")
+    # Log full retrieval score breakdown. Redact the patient query text.
+    # Topic names are low-cardinality clinical categories from the seed data,
+    # not patient input — they may be logged verbatim, assuming topics remain
+    # a fixed enum. If topics ever become user-supplied, redact them too.
+    logger.info(f"Retrieval Breakdown for Query: {redact_for_log(query)} (Keywords count: {len(query_keywords)})")
     for idx, item in enumerate(top_k_results, 1):
         logger.info(
             f"  Rank #{idx} | Topic: '{item['topic']}' | "

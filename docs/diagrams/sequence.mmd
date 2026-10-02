@@ -1,0 +1,51 @@
+sequenceDiagram
+    autonumber
+    actor User as User (Client)
+    participant Flask as Flask Controller
+    participant Pipe as Pipeline
+    participant Mem as Memory (SQLite)
+    participant Ret as Retriever
+    participant Chroma as ChromaDB
+    participant Gen as Generator (LLM)
+    participant Eval as Evaluator
+    participant TTS as TTS Engine
+
+    Note over User, TTS: Scenario A: Successful Grounded Medical Query (Confidence >= 0.70)
+    User->>Flask: 1. POST /api/query (query, session_id, voice=True)
+    Flask->>Flask: 2. Check Sliding Window Rate Limit
+    Flask->>Pipe: 3. handle_query(query, session_id, voice=True)
+    Pipe->>Pipe: 4. Check concerning & creator pattern guards
+    Pipe->>Mem: 5. get_history(session_id)
+    Mem-->>Pipe: 6. Return conversation history
+    Pipe->>Ret: 7. retrieve(query, top_k=4)
+    Ret->>Ret: 8. Encode dense query embedding (MiniLM)
+    Ret->>Chroma: 9. Query vector index with cosine similarity
+    Chroma-->>Ret: 10. Return raw candidate passages
+    Ret->>Ret: 11. Apply lexical rerank keyword boost
+    Ret-->>Pipe: 12. Return ranked verified medical chunks
+    Pipe->>Gen: 13. generate_answer(query, context, history)
+    Gen->>Gen: 14. Query Groq Cloud LLaMA-3.3 (temp=0.1)
+    Gen-->>Pipe: 15. Return draft synthesized clinical answer
+    Pipe->>Eval: 16. evaluate_and_respond(query, context, draft)
+    Eval->>Eval: 17. Evaluate Faithfulness & Relevance (Confidence >= 0.70)
+    Eval-->>Pipe: 18. Return evaluated structured advisory
+    Pipe->>Mem: 19. save_interaction(session_id, user, assistant, conf)
+    Pipe->>TTS: 20. synthesize_speech(answer_text)
+    TTS-->>Pipe: 21. Return audio stream URL
+    Pipe-->>Flask: 22. Return final response dictionary
+    Flask-->>User: 23. HTTP 200 OK (answer, citations, audio, confidence)
+
+    Note over User, TTS: Scenario B: Ungrounded Query Refusal Path (Confidence < 0.60)
+    User->>Flask: 24. POST /api/query (unsupported question)
+    Flask->>Pipe: 25. handle_query(query, session_id)
+    Pipe->>Ret: 26. retrieve(query, top_k=4)
+    Ret-->>Pipe: 27. Return low-similarity context passages
+    Pipe->>Gen: 28. generate_answer(query, low_context)
+    Gen-->>Pipe: 29. Return weak draft answer
+    Pipe->>Eval: 30. evaluate_and_respond(query, low_context, weak_draft)
+    Eval->>Eval: 31. Evaluator flags low relevance/faithfulness (Score < 0.60)
+    Eval-->>Pipe: 32. Return refusal advisory: "I don't have enough verified information..."
+    Pipe->>Mem: 33. save_interaction(session_id, refusal_text, conf=0.0)
+    Note over Pipe, TTS: TTS synthesis skipped due to refusal status
+    Pipe-->>Flask: 34. Return refusal payload
+    Flask-->>User: 35. HTTP 200 OK (refusal advisory, confidence=0.0, audio=None)

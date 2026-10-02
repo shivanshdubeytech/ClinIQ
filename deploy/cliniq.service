@@ -1,0 +1,33 @@
+[Unit]
+Description=ClinIQ medical RAG application
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=notify
+User=cliniq
+Group=cliniq
+WorkingDirectory=/srv/cliniq
+EnvironmentFile=/srv/cliniq/.env
+
+# Hardening. These are the defaults you should keep unless something breaks.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/srv/cliniq/static/audio /srv/cliniq/chroma_db /srv/cliniq
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=true
+LockPersonality=true
+# MemoryDenyWriteExecute=false is a deliberate loosening because
+# sentence-transformers' native dependencies (torch/numpy) may require it.
+# Verify at deploy time whether the application starts with it set to true; if so, tighten.
+MemoryDenyWriteExecute=false
+SystemCallArchitectures=native
+
+ExecStart=/srv/cliniq/venv/bin/gunicorn -c /srv/cliniq/gunicorn.conf.py app:app
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

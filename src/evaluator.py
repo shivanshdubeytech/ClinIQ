@@ -25,9 +25,8 @@ from groq import Groq
 
 from config import (
     CONFIDENCE_THRESHOLD,
-    GROQ_API_KEY,
-    KEY_ROTATION_MANAGER,
     LLM_MODEL_NAME,
+    get_all_groq_api_keys,
     rotate_groq_api_key,
     setup_logger,
 )
@@ -133,7 +132,7 @@ JSON:"""
     candidate_models = [LLM_MODEL_NAME, "openai/gpt-oss-120b", "openai/gpt-oss-20b", "qwen/qwen3.8-27b"]
     seen = set()
     models_to_try = [m for m in candidate_models if not (m in seen or seen.add(m))]
-    keys_to_try = KEY_ROTATION_MANAGER.get_all_keys()
+    keys_to_try = get_all_groq_api_keys()
 
     for api_key in keys_to_try:
         client = Groq(api_key=api_key)
@@ -159,17 +158,16 @@ JSON:"""
 
             except Exception as err:
                 err_str = str(err).lower()
-                logger.warning(f"Faithfulness check issue on model '{model}': {err}.")
+                logger.warning(f"Faithfulness check issue on model '{model}': {type(err).__name__}")
+                logger.debug(f"Faithfulness error details: {err}")
                 if "rate_limit" in err_str or "429" in err_str or "401" in err_str or "invalid_api_key" in err_str:
                     rotate_groq_api_key(api_key)
                     break  # Try next key
                 continue
 
-    # Fallback: if retrieval score is high (>= 0.4), lean toward faithful on parse/API glitch
-    if retrieval_score >= 0.4:
-        return True, f"Faithful (Fallback: high retrieval score {retrieval_score:.2f})", raw_response
-
-    return False, "Faithfulness check failed on all models", raw_response
+    # Outage / evaluation failure: fail-closed strictly
+    logger.error("Faithfulness evaluation could not be completed (all models/keys exhausted). Failing closed.")
+    return False, "Faithfulness check could not be completed.", ""
 
 
 def check_relevance(answer: str, question: str, retrieval_score: float = 0.0) -> Tuple[bool, str]:
@@ -212,7 +210,7 @@ JSON:"""
     candidate_models = [LLM_MODEL_NAME, "openai/gpt-oss-120b", "openai/gpt-oss-20b", "qwen/qwen3.8-27b"]
     seen = set()
     models_to_try = [m for m in candidate_models if not (m in seen or seen.add(m))]
-    keys_to_try = KEY_ROTATION_MANAGER.get_all_keys()
+    keys_to_try = get_all_groq_api_keys()
 
     for api_key in keys_to_try:
         client = Groq(api_key=api_key)
@@ -234,17 +232,16 @@ JSON:"""
 
             except Exception as err:
                 err_str = str(err).lower()
-                logger.warning(f"Relevance check issue on model '{model}': {err}.")
+                logger.warning(f"Relevance check issue on model '{model}': {type(err).__name__}")
+                logger.debug(f"Relevance error details: {err}")
                 if "rate_limit" in err_str or "429" in err_str or "401" in err_str or "invalid_api_key" in err_str:
                     rotate_groq_api_key(api_key)
                     break  # Try next key
                 continue
 
-    # Fallback: if retrieval score is high (>= 0.4), lean toward relevant on parse/API glitch
-    if retrieval_score >= 0.4:
-        return True, raw_response
-
-    return False, raw_response
+    # Outage / evaluation failure: fail-closed strictly
+    logger.error("Relevance evaluation could not be completed (all models/keys exhausted). Failing closed.")
+    return False, ""
 
 
 def compute_confidence(retrieval_score: float, faithful: bool, relevant: bool) -> float:
@@ -301,7 +298,8 @@ def evaluate_and_respond(
         Dict[str, Any]: A dictionary containing:
             - "final_answer" (str): The validated answer or safe fallback statement.
             - "confidence" (float): Composite confidence score.
-            - "passed" (bool): True if confidence >= CONFIDENCE_THRESHOLD.
+            - "passed" (bool): True if confidence >= CONFIDENCE_THRESHOLD and checks_ran.
+            - "checks_ran" (bool): True if evaluation checks successfully completed.
             - "faithful" (bool): Result of faithfulness check.
             - "relevant" (bool): Result of relevance check.
             - "reason" (str): Explanation from faithfulness check.
@@ -321,7 +319,8 @@ def evaluate_and_respond(
         relevant=relevant,
     )
 
-    passed = confidence >= CONFIDENCE_THRESHOLD
+    checks_ran = bool(raw_faith.strip()) and bool(raw_relevance.strip())
+    passed = checks_ran and (confidence >= CONFIDENCE_THRESHOLD)
 
     if passed:
         final_answer = answer
@@ -334,6 +333,7 @@ def evaluate_and_respond(
         "final_answer": final_answer,
         "confidence": confidence,
         "passed": passed,
+        "checks_ran": checks_ran,
         "faithful": faithful,
         "relevant": relevant,
         "reason": reason,

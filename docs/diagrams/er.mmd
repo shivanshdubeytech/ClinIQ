@@ -1,0 +1,122 @@
+flowchart TD
+    %% Entity-Relationship Diagram (Peter Chen Notation) for ClinIQ
+    classDef entity fill:#FFFFFF,stroke:#0F172A,stroke-width:2px,color:#0F172A,font-weight:bold;
+    classDef relationship fill:#F8FAFC,stroke:#0F172A,stroke-width:2px,color:#0F172A,font-weight:bold;
+    classDef attribute fill:#FFFFFF,stroke:#475569,stroke-width:1.5px,color:#1E293B;
+    classDef keyAttr fill:#F1F5F9,stroke:#0F172A,stroke-width:2px,color:#0F172A,font-weight:bold;
+
+    %% Entities
+    E_USER["USER_SESSION"]:::entity
+    E_SESS["SESSION"]:::entity
+    E_HIST["HISTORY"]:::entity
+    E_DOC["DOCUMENT"]:::entity
+    E_LAB["LAB_TEST"]:::entity
+    E_RX["PRESCRIPTION"]:::entity
+    E_EVAL["EVALUATED_TEST"]:::entity
+
+    %% Relationships
+    R_OWNS{"owns"}:::relationship
+    R_CONTAINS{"contains"}:::relationship
+    R_YIELDS_LAB{"yields"}:::relationship
+    R_YIELDS_RX{"yields"}:::relationship
+    R_DERIVES{"derives"}:::relationship
+
+    %% Attributes - USER_SESSION
+    A_UID(["<u>user_id</u>"]):::keyAttr
+    A_IP(["ip_hash"]):::attribute
+    A_UCRT(["created_at"]):::attribute
+    E_USER --- A_UID
+    E_USER --- A_IP
+    E_USER --- A_UCRT
+
+    %% Attributes - SESSION
+    A_SID(["<u>session_id</u>"]):::keyAttr
+    A_SUID(["user_id"]):::attribute
+    A_STITLE(["title"]):::attribute
+    A_SUPD(["updated_at"]):::attribute
+    E_SESS --- A_SID
+    E_SESS --- A_SUID
+    E_SESS --- A_STITLE
+    E_SESS --- A_SUPD
+
+    %% Attributes - HISTORY
+    A_HID(["<u>msg_id</u>"]):::keyAttr
+    A_HSID(["session_id"]):::attribute
+    A_HROLE(["role"]):::attribute
+    A_HCONT(["content"]):::attribute
+    A_HCONF(["confidence"]):::attribute
+    A_HTS(["timestamp"]):::attribute
+    E_HIST --- A_HID
+    E_HIST --- A_HSID
+    E_HIST --- A_HROLE
+    E_HIST --- A_HCONT
+    E_HIST --- A_HCONF
+    E_HIST --- A_HTS
+
+    %% Attributes - DOCUMENT
+    A_DID(["<u>doc_id</u>"]):::keyAttr
+    A_DSID(["session_id"]):::attribute
+    A_DFNAME(["filename"]):::attribute
+    A_DTYPE(["file_type"]):::attribute
+    A_DTIME(["uploaded_at"]):::attribute
+    E_DOC --- A_DID
+    E_DOC --- A_DSID
+    E_DOC --- A_DFNAME
+    E_DOC --- A_DTYPE
+    E_DOC --- A_DTIME
+
+    %% Attributes - LAB_TEST
+    A_LID(["<u>test_id</u>"]):::keyAttr
+    A_LDID(["doc_id"]):::attribute
+    A_LNAME(["marker_name"]):::attribute
+    A_LVAL(["measured_value"]):::attribute
+    A_LUNIT(["unit"]):::attribute
+    A_LREF(["reference_range"]):::attribute
+    E_LAB --- A_LID
+    E_LAB --- A_LDID
+    E_LAB --- A_LNAME
+    E_LAB --- A_LVAL
+    E_LAB --- A_LUNIT
+    E_LAB --- A_LREF
+
+    %% Attributes - PRESCRIPTION
+    A_PID(["<u>rx_id</u>"]):::keyAttr
+    A_PDID(["doc_id"]):::attribute
+    A_PDRUG(["drug_name"]):::attribute
+    A_PDOSE(["dosage"]):::attribute
+    A_PFREQ(["frequency"]):::attribute
+    A_PDUR(["duration"]):::attribute
+    E_RX --- A_PID
+    E_RX --- A_PDID
+    E_RX --- A_PDRUG
+    E_RX --- A_PDOSE
+    E_RX --- A_PFREQ
+    E_RX --- A_PDUR
+
+    %% Attributes - EVALUATED_TEST
+    A_EID(["<u>eval_id</u>"]):::keyAttr
+    A_ELID(["test_id"]):::attribute
+    A_ESTAT(["status"]):::attribute
+    A_EPANIC(["panic_alert"]):::attribute
+    A_EEXP(["explanation"]):::attribute
+    E_EVAL --- A_EID
+    E_EVAL --- A_ELID
+    E_EVAL --- A_ESTAT
+    E_EVAL --- A_EPANIC
+    E_EVAL --- A_EEXP
+
+    %% Structural Links with Cardinalities
+    E_USER ---|1| R_OWNS
+    R_OWNS ---|M| E_SESS
+
+    E_SESS ---|1| R_CONTAINS
+    R_CONTAINS ---|M| E_HIST
+
+    E_DOC ---|1| R_YIELDS_LAB
+    R_YIELDS_LAB ---|M| E_LAB
+
+    E_DOC ---|1| R_YIELDS_RX
+    R_YIELDS_RX ---|M| E_RX
+
+    E_LAB ---|1| R_DERIVES
+    R_DERIVES ---|1| E_EVAL

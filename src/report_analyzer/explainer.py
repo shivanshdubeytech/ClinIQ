@@ -40,6 +40,7 @@ class ItemExplanation:
     is_retrieved: bool = False
     suggested_doctor_questions: List[str] = field(default_factory=list)
     critical_alert: Optional[str] = None
+    verification_flags: List[str] = field(default_factory=list)
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -52,6 +53,7 @@ class ItemExplanation:
             "is_retrieved": self.is_retrieved,
             "suggested_doctor_questions": self.suggested_doctor_questions,
             "critical_alert": self.critical_alert,
+            "verification_flags": self.verification_flags,
         }
 
 
@@ -62,6 +64,7 @@ class ReportExplanationResult:
     explanations: List[ItemExplanation] = field(default_factory=list)
     unsupported_items: List[str] = field(default_factory=list)
     disclaimer: str = STANDARD_REPORT_DISCLAIMER
+    verification_flags: List[str] = field(default_factory=list)
 
     def to_markdown(self) -> str:
         """Renders an accessible plain-language Markdown summary for patients."""
@@ -107,6 +110,7 @@ class ReportExplanationResult:
             "explanations": [e.to_dict() for e in self.explanations],
             "unsupported_items": self.unsupported_items,
             "disclaimer": self.disclaimer,
+            "verification_flags": self.verification_flags,
         }
 
 

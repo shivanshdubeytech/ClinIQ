@@ -23,6 +23,13 @@ from dotenv import load_dotenv
 # Load environment variables from a local .env file if available
 load_dotenv()
 
+# Memory optimization and telemetry suppression for production cloud environments
+os.environ.setdefault("ANONYMIZED_TELEMETRY", "False")
+os.environ.setdefault("CHROMA_TELEMETRY", "False")
+os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
+os.environ.setdefault("OMP_NUM_THREADS", "1")
+os.environ.setdefault("MKL_NUM_THREADS", "1")
+
 T = TypeVar("T")
 
 
@@ -88,10 +95,10 @@ class KeyRotationManager:
                 raise RuntimeError("No Groq API keys available for rotation.")
             return self._keys[self._index]
 
-    def rotate_key(self, failed_key: Optional[str] = None) -> str:
+    def rotate_key(self, failed_key: Optional[str] = None) -> Optional[str]:
         with self._lock:
             if not self._keys:
-                raise RuntimeError("No Groq API keys available for rotation.")
+                return None
             if len(self._keys) == 1:
                 return self._keys[0]
             old_idx = self._index
@@ -112,34 +119,38 @@ def _parse_api_keys() -> List[str]:
     raw_keys = os.getenv("GROQ_API_KEYS") or os.getenv("GROQ_API_KEY") or ""
     parts = [p.strip().strip(",").strip('"').strip("'") for p in raw_keys.split(",") if p.strip()]
     if not parts or parts[0] == "your_key_here":
-        raise RuntimeError(
-            "Required environment variable 'GROQ_API_KEY' or 'GROQ_API_KEYS' is missing or unconfigured. "
-            "Please configure your key in .env"
-        )
+        return []
     return parts
 
 
-# API Credentials & Key Rotation
-GROQ_API_KEYS: List[str] = _parse_api_keys()
-KEY_ROTATION_MANAGER: KeyRotationManager = KeyRotationManager(GROQ_API_KEYS)
-GROQ_API_KEY: str = KEY_ROTATION_MANAGER.get_current_key()
+# API Credentials & Key Rotation (lazy — resolved on first use).
+_KEY_ROTATION_MANAGER: Optional[KeyRotationManager] = None
 
+def _get_manager() -> KeyRotationManager:
+    """Lazily construct the key manager. Resolves without crashing on empty environments."""
+    global _KEY_ROTATION_MANAGER
+    if _KEY_ROTATION_MANAGER is None:
+        _KEY_ROTATION_MANAGER = KeyRotationManager(_parse_api_keys())
+    return _KEY_ROTATION_MANAGER
 
-def get_groq_api_key() -> str:
-    """Returns the currently active Groq API key."""
-    return KEY_ROTATION_MANAGER.get_current_key()
+def get_groq_api_key() -> Optional[str]:
+    """Returns the currently active Groq API key (resolves lazily), or None if none configured."""
+    try:
+        return _get_manager().get_current_key()
+    except Exception:
+        return None
 
+def rotate_groq_api_key(failed_key: Optional[str] = None) -> Optional[str]:
+    """Rotates to the next configured Groq API key."""
+    return _get_manager().rotate_key(failed_key)
 
-def rotate_groq_api_key(failed_key: Optional[str] = None) -> str:
-    """Rotates to the next configured Groq API key upon failure or rate limit."""
-    new_key = KEY_ROTATION_MANAGER.rotate_key(failed_key)
-    global GROQ_API_KEY
-    GROQ_API_KEY = new_key
-    return new_key
+def get_all_groq_api_keys() -> List[str]:
+    """Returns keys in rotation order (currently active first)."""
+    return _get_manager().get_all_keys()
 
 # AI Model Configurations
 EMBEDDING_MODEL_NAME: str = _get_env_var("EMBEDDING_MODEL_NAME", "all-MiniLM-L6-v2", str)
-LLM_MODEL_NAME: str = _get_env_var("LLM_MODEL_NAME", "qwen/qwen3.8-27b", str)
+LLM_MODEL_NAME: str = _get_env_var("LLM_MODEL_NAME", "llama-3.1-8b-instant", str)
 
 # RAG & Document Processing Hyperparameters
 CHUNK_SIZE: int = _get_env_var("CHUNK_SIZE", 250, int)
@@ -148,7 +159,7 @@ CONFIDENCE_THRESHOLD: float = _get_env_var("CONFIDENCE_THRESHOLD", 0.6, float)
 
 # Storage & Database Paths
 PROJECT_ROOT: Path = Path(__file__).resolve().parent
-AUDIO_DIR: Path = PROJECT_ROOT / "static" / "audio"
+AUDIO_DIR: Path = Path(_get_env_var("AUDIO_DIR", str(PROJECT_ROOT / "static" / "audio"), str))
 AUDIO_DIR.mkdir(parents=True, exist_ok=True)
 CHROMA_DB_PATH: str = _get_env_var("CHROMA_DB_PATH", "./chroma_db", str)
 SQLITE_DB_PATH: str = _get_env_var("SQLITE_DB_PATH", "./cliniq.db", str)
@@ -173,6 +184,46 @@ LOG_LEVEL_STR: str = _get_env_var("LOG_LEVEL", "INFO", str).upper()
 LOG_LEVEL: int = getattr(logging, LOG_LEVEL_STR, logging.INFO)
 
 
+import hashlib
+import secrets
+
+def redact_for_log(text: Optional[str], max_len: int = 0) -> str:
+    """Returns a non-reversible, non-reconstructable token for logging.
+
+    Never log raw patient text. Use this for any string that originated
+    from a user: questions, answers, filenames, extracted document text,
+    drug names from prescriptions, and reference ranges from reports.
+
+    Returns a short fingerprint so distinct inputs remain distinguishable
+    in logs for debugging, without retaining the content.
+    """
+    if not text:
+        return "<empty>"
+    digest = hashlib.sha256(text.encode("utf-8", errors="replace")).hexdigest()[:12]
+    if max_len <= 0:
+        return f"<redacted:{digest}>"
+    # Optionally keep a bounded prefix for operational debugging. Only use
+    # this for NON-CLINICAL text such as error messages.
+    return f"{text[:max_len]!r}...<redacted:{digest}>"
+
+
+def new_audio_token() -> str:
+    """Returns an unguessable token for an audio filename.
+
+    base64url alphabet is [A-Za-z0-9_-], which matches the anchored
+    regex in app.py (prior spec §1). 16 bytes = 128 bits of entropy.
+    """
+    return secrets.token_urlsafe(16)
+
+
+# ------------------------------------------------------------------
+# LOG REDACTION POLICY
+# No string that originated from a user — question, answer, uploaded
+# document text, extracted clinical values, or filename — may be logged
+# at INFO or above. Use redact_for_log(). This is enforced by review,
+# not by the type system; when adding a logger call, classify the
+# interpolated values before committing.
+# ------------------------------------------------------------------
 def setup_logger(name: str) -> logging.Logger:
     """Configures and returns a standardized logger for ClinIQ modules.
 

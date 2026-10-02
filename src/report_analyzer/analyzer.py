@@ -102,6 +102,8 @@ def assign_item_label(
     is_critical: bool,
     is_ambiguous: bool = False,
     is_verified_drug: bool = True,
+    has_verification_flags: bool = False,
+    status: Optional[str] = None,
 ) -> Tuple[str, str]:
     """Assigns the exact required label: 'see a doctor soon', 'low confidence - please verify', or 'clearly read'.
 
@@ -112,8 +114,14 @@ def assign_item_label(
     if is_critical:
         return LABEL_SEE_DOCTOR_SOON, "danger"
 
-    # 2. Low confidence, ambiguous formatting, or unverified medications
-    if confidence < 0.85 or is_ambiguous or not is_verified_drug:
+    # 2. Low confidence, ambiguous formatting, unverified medications, unit mismatch, or second-pass verification flags
+    if (
+        confidence < 0.85
+        or is_ambiguous
+        or not is_verified_drug
+        or has_verification_flags
+        or status == "UNVERIFIED_UNIT"
+    ):
         return LABEL_LOW_CONFIDENCE, "warning"
 
     # 3. Clean, high confidence read
@@ -197,6 +205,8 @@ def analyze_medical_document(
         label, badge = assign_item_label(
             confidence=test.confidence,
             is_critical=test.is_critical,
+            has_verification_flags=bool(exp.verification_flags) if exp else False,
+            status=test.status,
         )
 
         if test.is_critical:
@@ -241,6 +251,7 @@ def analyze_medical_document(
             is_critical=False,
             is_ambiguous=rx_item.is_ambiguous if rx_item else False,
             is_verified_drug=drug.is_verified,
+            has_verification_flags=bool(exp.verification_flags) if exp else False,
         )
 
         dosage_desc = (
@@ -268,7 +279,11 @@ def analyze_medical_document(
     # Overall document label
     if has_critical:
         overall_doc_label = LABEL_SEE_DOCTOR_SOON
-    elif any(it.label == LABEL_LOW_CONFIDENCE for it in labeled_items) or extraction.is_blurry_or_low_quality:
+    elif (
+        any(it.label == LABEL_LOW_CONFIDENCE for it in labeled_items)
+        or extraction.is_blurry_or_low_quality
+        or bool(verified_explanation.verification_flags)
+    ):
         overall_doc_label = LABEL_LOW_CONFIDENCE
     else:
         overall_doc_label = LABEL_CLEARLY_READ

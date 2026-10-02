@@ -21,7 +21,7 @@ if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
 import config
-from config import setup_logger
+from config import new_audio_token, redact_for_log, setup_logger
 from src.evaluator import evaluate_and_respond
 from src.generator import generate_answer
 from src.memory import get_recent_history, save_interaction
@@ -89,6 +89,25 @@ def check_concerning_query(question: str) -> bool:
     return False
 
 
+# Creator & Identity Query Patterns (anchored to prevent false positives on medical queries)
+CREATOR_QUERY_PATTERNS = [
+    r"^\s*who\s+(created|made|developed|programmed|built)\s+(you|u)\b",
+    r"^\s*who\s+is\s+your\s+(creator|maker|developer|father|daddy|papa)\b",
+    r"^\s*who('s|s)\s+your\s+(creator|maker|developer|father|daddy|papa)\b",
+    r"^\s*who\s+is\s+ur\s+(creator|maker|developer|father|daddy|papa)\b",
+    r"^\s*(your|ur)\s+(creator|maker|developer|father)\b",
+    r"^\s*(who\s+are\s+you|what\s+is\s+your\s+name)\b",
+]
+
+
+def check_creator_query(question: str) -> bool:
+    """Returns True ONLY if the question is an identity/creator query about ClinIQ itself."""
+    if not question:
+        return False
+    q_norm = question.strip().lower()
+    return any(re.search(pat, q_norm) for pat in CREATOR_QUERY_PATTERNS)
+
+
 def handle_query(user_id: str, question: str, session_id: Optional[str] = None) -> Dict[str, Any]:
     """Orchestrates the end-to-end ClinIQ RAG pipeline for a user query.
 
@@ -109,7 +128,8 @@ def handle_query(user_id: str, question: str, session_id: Optional[str] = None) 
         Dict[str, Any]: A result dictionary with keys:
             - "answer" (str): Final validated answer or fallback message.
             - "confidence" (float): Composite confidence score (0.0 to 1.0).
-            - "passed" (bool): True if confidence >= CONFIDENCE_THRESHOLD.
+            - "passed" (bool): True if confidence >= CONFIDENCE_THRESHOLD and checks_ran.
+            - "checks_ran" (bool): True if evaluation completed.
             - "audio_path" (Optional[str]): Absolute path to synthesized MP3 audio if passed, else None.
             - "sources" (List[str]): List of unique topic sources used in context retrieval.
     """
@@ -118,6 +138,7 @@ def handle_query(user_id: str, question: str, session_id: Optional[str] = None) 
             "answer": "Please provide a valid question.",
             "confidence": 0.0,
             "passed": False,
+            "checks_ran": False,
             "audio_path": None,
             "sources": [],
             "is_concerning": False,
@@ -126,34 +147,13 @@ def handle_query(user_id: str, question: str, session_id: Optional[str] = None) 
 
     is_concerning: bool = check_concerning_query(question)
     if is_concerning:
-        logger.warning(f"[CONCERNING QUERY DETECTED] Question: '{question}' flagged for urgent medical disclaimer.")
+        logger.warning(
+            f"[CONCERNING QUERY DETECTED] question={redact_for_log(question)} "
+            f"flagged for urgent medical disclaimer."
+        )
 
-    # Custom Identity & Creator attribution handler
-    q_norm = question.strip().lower()
-    creator_keywords = [
-        "father",
-        "daddy",
-        "dad",
-        "papa",
-        "creator",
-        "maker",
-        "who created you",
-        "who created u",
-        "who made you",
-        "who made u",
-        "who is your father",
-        "who is your daddy",
-        "who's your father",
-        "who's your daddy",
-        "who is ur father",
-        "who is ur daddy",
-        "who is your father or daddy",
-        "your developer",
-        "who developed you",
-        "who developed u",
-        "who programmed you",
-    ]
-    if any(kw in q_norm for kw in creator_keywords):
+    # Custom Identity & Creator attribution handler (strictly gated, never fires on concerning queries)
+    if not is_concerning and check_creator_query(question):
         creator_answer = "Shivansh Dubey is my creator and father."
         save_interaction(
             user_id=user_id,
@@ -162,13 +162,19 @@ def handle_query(user_id: str, question: str, session_id: Optional[str] = None) 
             answer=creator_answer,
             confidence=1.0,
         )
-        audio_filename = f"audio_{user_id}_{abs(hash(question)) % 10000}.mp3"
-        audio_target = str(config.AUDIO_DIR / audio_filename)
-        audio_path = synthesize(text=creator_answer, output_path=audio_target)
+        audio_path = None
+        try:
+            audio_filename = f"audio_{new_audio_token()}.mp3"
+            audio_target = str(config.AUDIO_DIR / audio_filename)
+            audio_path = synthesize(text=creator_answer, output_path=audio_target)
+        except Exception as e:
+            logger.warning(f"Audio synthesis failed for creator query: {e}")
+
         return {
             "answer": creator_answer,
             "confidence": 1.0,
             "passed": True,
+            "checks_ran": True,
             "audio_path": audio_path,
             "sources": ["ClinIQ System Profile"],
             "is_concerning": False,
@@ -206,6 +212,7 @@ def handle_query(user_id: str, question: str, session_id: Optional[str] = None) 
         final_answer: str = eval_result["final_answer"]
         confidence: float = eval_result["confidence"]
         passed: bool = eval_result["passed"]
+        checks_ran: bool = eval_result.get("checks_ran", False)
 
         # Step 5: Save interaction to memory DB
         save_interaction(
@@ -219,14 +226,18 @@ def handle_query(user_id: str, question: str, session_id: Optional[str] = None) 
         # Step 6: Text-to-Speech audio synthesis (only if passed evaluation to save time/resources)
         audio_path: Optional[str] = None
         if passed:
-            audio_filename = f"audio_{user_id}_{abs(hash(question)) % 10000}.mp3"
-            audio_target = str(config.AUDIO_DIR / audio_filename)
-            audio_path = synthesize(text=final_answer, output_path=audio_target)
+            try:
+                audio_filename = f"audio_{new_audio_token()}.mp3"
+                audio_target = str(config.AUDIO_DIR / audio_filename)
+                audio_path = synthesize(text=final_answer, output_path=audio_target)
+            except Exception as e:
+                logger.warning(f"Audio synthesis failed for passed answer: {e}")
 
         return {
             "answer": final_answer,
             "confidence": confidence,
             "passed": passed,
+            "checks_ran": checks_ran,
             "audio_path": audio_path,
             "sources": sources,
             "is_concerning": is_concerning,
@@ -235,11 +246,12 @@ def handle_query(user_id: str, question: str, session_id: Optional[str] = None) 
 
     except Exception as err:
         # Fail-safe catch-all to prevent system crashes
-        print(f"[PIPELINE ERROR] Critical error during query execution: {err}")
+        logger.error(f"[PIPELINE ERROR] Critical error during query execution: {type(err).__name__}")
         return {
             "answer": "An unexpected error occurred while processing your request. Please try again later.",
             "confidence": 0.0,
             "passed": False,
+            "checks_ran": False,
             "audio_path": None,
             "sources": [],
             "is_concerning": False,
