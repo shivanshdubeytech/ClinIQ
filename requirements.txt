@@ -1,3 +1,6 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch
+
 # Web framework & WSGI server
 Flask>=3.0.0
 gunicorn>=21.2.0

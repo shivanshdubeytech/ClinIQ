@@ -16,7 +16,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from app import app
+from app import app, reset_rate_limiters
 from src.memory import create_session, init_db, save_interaction
 
 
@@ -28,6 +28,9 @@ class TestClinIQIntegration(unittest.TestCase):
         app.config["TESTING"] = True
         init_db()
         cls.client = app.test_client()
+
+    def setUp(self):
+        reset_rate_limiters()
 
     def test_01_frontend_served(self):
         """Verifies that the frontend single-page application is served at root and /index.html."""

@@ -100,6 +100,16 @@ _UPLOAD_LIMITER = SlidingWindowLimiter(max_requests=5,  window_seconds=300)
 _READ_LIMITER = SlidingWindowLimiter(max_requests=30,  window_seconds=60)
 
 
+def reset_rate_limiters():
+    """Resets all sliding window rate limiter buckets (used for clean test fixture isolation)."""
+    with _QUERY_LIMITER._lock:
+        _QUERY_LIMITER._buckets.clear()
+    with _UPLOAD_LIMITER._lock:
+        _UPLOAD_LIMITER._buckets.clear()
+    with _READ_LIMITER._lock:
+        _READ_LIMITER._buckets.clear()
+
+
 def _rate_limit_key() -> str:
     """Rate-limit key: client IP. See prior spec §8 for the read-endpoint
     limitation note — until authentication exists, IP is the best available

@@ -1,7 +1,7 @@
 """Behavioral integration tests for Flask REST API endpoints."""
 import io
 import pytest
-from app import app
+from app import app, reset_rate_limiters
 
 
 @pytest.fixture
@@ -44,6 +44,7 @@ def test_analyze_report_rejects_unsupported_format(client):
 
 
 def test_rate_limit_returns_429_after_threshold(client):
+    reset_rate_limiters()
     # Send empty queries to exercise limiter without triggering slow external LLM inference
     codes = []
     for _ in range(25):
